@@ -1,53 +1,45 @@
 ﻿module OldMan.LanguageTraining.Persistence
 
 open System
+open FSharp.Data
 open Domain
 
-type private Id= uint64
-
-type private PersistentConfiguration = LanguageConfiguration
-
+// persistence types
+type PersistentConfiguration = 
+    CsvProvider<
+        Schema = "LeftLanguageName (string), RightLanguageName (string)",
+        HasHeaders=false
+        >
 
 type private PersistentPair= 
-    {
-        Id: Id
-        Left: string
-        Right: string
-        Created: DateTime
-    }
+    CsvProvider<
+        Schema = "Id (uint64), Left (string), Right (string), Created (DateTime)",
+        HasHeaders=false
+        >
 
 type private PersistentTag= 
-    {
-        Id: Id
-        Tag: string
-    }
+    CsvProvider<
+        Schema = "Id (uint64), Tag (string)",
+        HasHeaders=false
+        >
 
 type private PersistentTagWordAssociation=
-    {
-        TagId: Id
-        PairId: Id
-    }
-
-type private QuestionResult=
-    | Correct
-    | Incorrect
+    CsvProvider<
+        Schema = "TagId (uint64), PairId (uint64)",
+        HasHeaders=false
+        >
 
 type private PersistentHistoryRecord=
-    {
-        PairId: Id
-        Timestamp: DateTime
-        Result: QuestionResult
-        ScoreDelta: int
-        Type: QuestionType
-        Direction: Direction
-    }
+    CsvProvider<
+        Schema = "PairId (uint64), Timestamp (DateTime), WasCorrect (bool), ScoreDelta (int), Type (int), Direction (int)",
+        HasHeaders=false
+        >
 
 type private PersistentScoreCard=
-    {
-        PairId: Id
-        ScoreCard: ScoreCard
-    }
-
+    CsvProvider<
+        Schema = "PairId (uint64), LastAsked (DateTime), TimesAsked (uint32), LeftScore (int), RightScore (int)",
+        HasHeaders=false
+        >
 
 type private Database=
     {
@@ -58,6 +50,7 @@ type private Database=
         ScoreCards: PersistentScoreCard list
         History: PersistentHistoryRecord list
     }
+
 
 
 
