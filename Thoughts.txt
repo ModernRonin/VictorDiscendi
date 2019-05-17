@@ -34,6 +34,7 @@ learning
             ask them in the order from oldest lastAsked to newest
 
 		! deal with multiple correct answers for a question
+		!? maybe at some point include time-to-answer in scoring
 
 statistics:
     worst words
