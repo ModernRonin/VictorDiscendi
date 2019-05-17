@@ -51,6 +51,28 @@ type private Database=
         History: PersistentHistoryRecord list
     }
 
+open System.IO
 
+let private saveConfiguration (path: string) config=
+    let csv= new PersistentConfiguration(
+            [
+                PersistentConfiguration.Row(config.LeftLanguageName, config.RightLanguageName)
+            ]
+        )
+    csv.Save path
+
+let private loadConfiguration (path: string) config=
+    let csv=  PersistentConfiguration.Load path
+    let single= csv.Rows |> Seq.head
+    {LeftLanguageName= single.LeftLanguageName; RightLanguageName= single.RightLanguageName}
+
+type Persistence(directory: string)=
+    let configPath= Path.Combine(directory, "LanguageConfiguration")
+    member this.SaveConfiguration =  saveConfiguration configPath
+    member this.LoadConfiguration (config: LanguageConfiguration)=  loadConfiguration configPath
+
+
+        
+        
 
 
