@@ -49,3 +49,15 @@ type private PersistentScoreCard=
     }
 
 
+type private Database=
+    {
+        Configuration: PersistentConfiguration
+        WordPairs: PersistentPair list
+        Tags: PersistentTag list
+        TagWordAssociations: PersistentTagWordAssociation list
+        ScoreCards: PersistentScoreCard list
+        History: PersistentHistoryRecord list
+    }
+
+
+
