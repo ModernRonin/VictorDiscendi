@@ -5,6 +5,11 @@ VisualStudioVersion = 16.0.28803.452
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "OldMan.LanguageTraining.ConsoleRunner", "OldMan.LanguageTraining.ConsoleRunner\OldMan.LanguageTraining.ConsoleRunner.fsproj", "{0CF3E202-FBD1-4D02-A456-A8B5CC227459}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{DBABC917-2856-4725-BECA-B476E3A886C3}"
+	ProjectSection(SolutionItems) = preProject
+		Thoughts.txt = Thoughts.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

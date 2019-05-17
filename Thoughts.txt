@@ -1,0 +1,102 @@
+interactions:
+editing
+    add word pair
+    list word pairs
+    edit
+    delete
+    import csv
+
+    word pairs have tags associated
+    timestamp (first entered)
+
+learning
+    parameters:
+        direction: both, a->b, b->a
+        method: multiple choice, free entry
+        max-score to be included (default 0)
+        tags to be included
+        future: parameterize multiple choice with tags
+
+    algorithmus:
+        each word has   
+            count (how often asked)
+            score
+            last asked (timestamp)
+        count starts with 0
+        score starts with -1
+        lastAsked starts with DateTime.Min
+        when a word is involved in a question, the count is incremented
+            if the question was answered
+                correctly: the score is incremented
+                incorrectly: the score is decremented
+        the next question is picked from the set (as narrowed down by parameters) thus:
+            consider words with score < maxScore
+            ask them in the order from oldest lastAsked to newest
+
+		! deal with multiple correct answers for a question
+
+statistics:
+    worst words
+    oldest words
+    %age with score>= 0
+    over time
+
+
+platforms, order:
+    1..console 
+        edit
+        learn
+    2. android
+        learn
+    3. wpf:
+        edit
+        learn
+    4. android: add words
+    5. wpf: stats
+    6. android: edit
+    7. android: stats
+
+cross-cutting:
+    persistence
+    some sort of data sync, serverless because we don't wanna pay for a server, or maybe azure blob storage
+
+	would be nice if persistence and wire format could be the same and be easily merged
+	would be nice if we could re-use word lists without scoring for another user (far future, but...)
+	separate into tables, each table a file
+	table format csv
+
+	all clients read/write on blob storage, and always as soon as possible
+	concurrency no issue because who's gonna use multiple clients so concurrently that we get conflicts?
+	
+persisted data structure:
+	(intentionally restricting to 2 languages; multiple languages makes everything a lot more complicated and if we ever want to re-use, like learn a 3rd language,
+	we can just extract the word list of one language to initialize a new db)
+	
+	databasey from the start, so if we ever want to move from files to an SQL backstore, it'll be easy
+
+	words
+		config
+			nameLang1, nameLang2
+		wordpairs
+			id, wordL1, wordL2, creationTimestamp
+		tags
+			id, name
+		tagWords
+			tagId, pairId
+	scoring
+		quizhistory
+			pairId, timestamp, answeredCorrectly (bool), quizsettings/info (json?)
+
+		scorestate				(this table is completely reconstructable from quizhistory, but makes life easier for quizzing and for stats)
+			pairId, currentCount, currentScore, lastAsked
+		
+		
+
+data entry:
+	prevent double entries
+	warn about conflicts/synonyms
+
+
+
+
+
