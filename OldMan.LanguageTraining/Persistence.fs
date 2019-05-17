@@ -61,16 +61,22 @@ let private saveConfiguration (path: string) config=
         )
     csv.Save path
 
-let private loadConfiguration (path: string) config=
+let private loadConfiguration (path: string) =
     let csv=  PersistentConfiguration.Load path
     let single= csv.Rows |> Seq.head
     {LeftLanguageName= single.LeftLanguageName; RightLanguageName= single.RightLanguageName}
 
+   
+let private addPair (path: string) pair=
+    let csv= PersistentPair.Load path
+    csv.Append 
+
 type Persistence(directory: string)=
     let configPath= Path.Combine(directory, "LanguageConfiguration")
     member this.SaveConfiguration =  saveConfiguration configPath
-    member this.LoadConfiguration (config: LanguageConfiguration)=  loadConfiguration configPath
+    member this.LoadConfiguration =  loadConfiguration configPath
 
+    //member this.AddPair = addPa
 
         
         
