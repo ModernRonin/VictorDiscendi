@@ -13,7 +13,8 @@ type ScoreCard =
     {
         LastAsked: DateTime
         TimesAsked: uint32
-        Score: int
+        LeftScore: int
+        RightScore: int
     }
 type WordPair= 
      {
@@ -22,6 +23,12 @@ type WordPair=
         Tags: Tag list
         ScoreCard: ScoreCard
      }
+
+type LanguageConfiguration= 
+    {
+        LeftLanguageName: string
+        RightLanguageName: string
+    }
 
 // quizzes
 type Direction=

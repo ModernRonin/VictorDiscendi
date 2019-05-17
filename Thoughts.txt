@@ -18,20 +18,21 @@ learning
         future: parameterize multiple choice with tags
 
     algorithmus:
-        each word has   
+        each pair has   
             count (how often asked)
-            score
+            score (left, right)
             last asked (timestamp)
         count starts with 0
         score starts with -1
         lastAsked starts with DateTime.Min
-        when a word is involved in a question, the count is incremented
+        when a pair is involved in a question, the count is incremented
             if the question was answered
-                correctly: the score is incremented
-                incorrectly: the score is decremented
+                correctly: the score is incremented (for the corresponding direction)
+                incorrectly: the score is decremented (for the corresponding direction)
         the next question is picked from the set (as narrowed down by parameters) thus:
-            consider words with score < maxScore
+            consider pairs where at least one of the direction scores < maxScore
             ask them in the order from oldest lastAsked to newest
+			pick the direction with the lesser score
 
 		! deal with multiple correct answers for a question
 		!? maybe at some point include time-to-answer in scoring
