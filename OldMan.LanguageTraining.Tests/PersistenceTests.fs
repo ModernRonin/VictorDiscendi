@@ -9,24 +9,31 @@ let shouldNotHappen() = raise (AssertionException("Should not get here"))
 
 type UnderTest= OldMan.LanguageTraining.Persistence.Persistence
 
+let loader returnValues = 
+    fun kind -> match returnValues |> Map.ofList |> Map.tryFind kind with
+                | Some x -> x
+                | _ -> shouldNotHappen()
+    
+let mutable saveCalls: Map<DataKind, string> = Map.empty
+
+let save kind data = 
+    saveCalls <- saveCalls.Add (kind, data)
+
+let create loadResults =
+    let loader= loader loadResults
+    saveCalls <- Map.empty
+    new UnderTest(loader, save)
+    
 module ``GetConfiguration``=
     [<Test>]
     let ``loads from CSV``() =
-        let loader kind= match kind with
-            | Configuration -> "English,German"
-            | _ -> shouldNotHappen()
-        let saver _ _ = shouldNotHappen()
-
-        let underTest= new UnderTest(loader, saver)
+        let underTest = create [(Configuration, "English,German")] 
         underTest.GetConfiguration() |> shouldEqual { LeftLanguageName="English"; RightLanguageName="German"}
+        saveCalls |> shouldBeEmpty
         
 module ``UpdateConfiguration``=
     [<Test>]
     let ``saves to CSV``()=
-        let loader _ = shouldNotHappen()
-        let saver kind data = match kind with
-            | Configuration -> data |> shouldEqual "English,German\r\n"
-            | _ -> shouldNotHappen()
-
-        let underTest= new UnderTest(loader, saver)
+        let underTest= create []
         underTest.UpdateConfiguration { LeftLanguageName="English"; RightLanguageName="German"} 
+        saveCalls |> shouldEqual (Map [(Configuration,"English,German\r\n")])
