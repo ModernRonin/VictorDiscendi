@@ -90,56 +90,63 @@ let inline private nextIdIn (rows: ^record seq)=
     1L + (rows |> Seq.map idOf |> Seq.max)
     
 
-// public interface
-type Persistence(directory: string)=
-    let configPath= Path.Combine(directory, "LanguageConfiguration.csv")
-    let pairsPath= Path.Combine(directory, "Pairs.csv")
-    let tagsPath= Path.Combine(directory, "Tags.csv")
-    let associationsPath= Path.Combine(directory, "PairTagAssociations.csv")
+type DataKind=
+    | Configuration
+    | Words
+    | Tagging
+    | WordTagAssociation
+
+type Loader= DataKind -> string
+type Saver= DataKind -> string -> unit
+
+type Persistence(loader: Loader, saver: Saver)=
+    let loadWords()= Words |> loader |> PersistentPair.ParseRows |> List.ofArray
+    let saveWords w= ((new PersistentPair(w)).SaveToString()) |> saver Words 
+    let loadTags()= Tagging |> loader |> PersistentTag.ParseRows |> List.ofArray
+    let saveTags t= ((new PersistentTag(t)).SaveToString()) |> saver Tagging
+    let loadAssociations()= WordTagAssociation |> loader |> PersistentTagPairAssociation.ParseRows |> List.ofArray
+    let saveAssociations a= ((new PersistentTagPairAssociation(a)).SaveToString()) |> saver WordTagAssociation
+    let loadConfig()= Configuration |> loader |> PersistentConfiguration.ParseRows |> Array.head
+    let saveConfig c= ((new PersistentConfiguration(c |> Seq.singleton )).SaveToString()) |> saver Configuration
 
     let createPair pair= 
-        let csv= PersistentPair.Load pairsPath
-        let nextId=  nextIdIn csv.Rows 
-        let updated= pair |> (makePair nextId) |> Seq.singleton |> csv.Append
-        updated.Save pairsPath
+        let existing= loadWords()
+        let nextId=  nextIdIn existing 
+        let updated= pair |> (makePair nextId) |> List.singleton |> List.append existing
+        saveWords updated
         nextId
 
     let editPair pair=
-        let csv= PersistentPair.Load pairsPath
+        let existing= loadWords()
         let (left, right)= extractWordTexts pair
-        let oldPair= csv.Rows |> Seq.find (fun p -> p.Left=left && p.Right=right)
+        let oldPair= existing |> List.find (fun p -> p.Left=left && p.Right=right)
         let newPair= makePair oldPair.Id pair
-        csv.Filter((fun p -> p.Id<>oldPair.Id)).Append(newPair |> Seq.singleton).Save pairsPath
+        let existingWithoutOld= existing |> List.filter (fun p -> p.Id<>oldPair.Id)
+        newPair :: existingWithoutOld |> saveWords
         oldPair.Id
 
     let getTagIds tags=
-        let csv= PersistentTag.Load tagsPath
-        let nextId= nextIdIn csv.Rows
-        let existing= csv.Rows |> Seq.map (fun t -> t.Tag) |> Set.ofSeq
-        let updated= tags |> Set.ofSeq |> Set.difference existing |> Seq.indexed 
-                     |> Seq.map (fun (i, t) -> makeTag (nextId+int64 i) t) |> csv.Append
-        updated.Save tagsPath
-        updated.Rows |> Seq.map idOf
+        let existing= loadTags()
+        let nextId= nextIdIn existing
+        let existingTagsOnly= existing |> Seq.map (fun t -> t.Tag) |> Set.ofSeq
+        let updated= tags |> Set.ofSeq |> Set.difference existingTagsOnly |> List.ofSeq |> List.indexed 
+                     |> List.map (fun (i, t) -> makeTag (nextId+int64 i) t) |> List.append existing
+        saveTags updated
+        updated |> List.map idOf
 
     let updateAssociations pairId tagIds=
-        let nu= tagIds |> Seq.map (fun tagId -> makePairTagAssociation pairId tagId)
+        let nu= tagIds |> List.map (fun tagId -> makePairTagAssociation pairId tagId)
         // TODO: for removed tags, check if they are in use by anything else, if no delete them
-        let csv= nu |> PersistentTagPairAssociation.Load(associationsPath).Filter((fun a -> a.PairId<>pairId)).Append
-        csv.Save associationsPath
+        let toKeep= loadAssociations() |> List.filter (fun a -> a.PairId<>pairId)
+        nu |> List.append <| toKeep |> saveAssociations
 
     let getAssociatedTags pairId=
-        let tagIds= PersistentTagPairAssociation.Load(associationsPath).Filter((fun a -> a.PairId=pairId)).Rows 
-                        |> Seq.map (fun a -> a.TagId) |> Set.ofSeq
-        PersistentTag.Load(tagsPath).Filter((fun t -> tagIds.Contains t.Id)).Rows 
-                        |> Seq.map (fun t -> t.Tag) |> List.ofSeq
+        let tagIds= loadAssociations() |> List.filter (fun a -> a.PairId=pairId) |> List.map (fun a -> a.TagId) |> Set.ofList
+        loadTags() |> List.filter (fun t -> tagIds.Contains t.Id) |> List.map (fun t -> t.Tag)
 
-    member this.UpdateConfiguration config=  
-        let csv= new PersistentConfiguration([serializeCfg config])
-        csv.Save configPath
+    member this.UpdateConfiguration=  serializeCfg >> saveConfig 
         
-    member this.GetConfiguration =  
-        let csv=  PersistentConfiguration.Load configPath
-        csv.Rows |> Seq.head |> deserializeCfg
+    member this.GetConfiguration() =  loadConfig() |> deserializeCfg
 
     member this.AddPair pair = 
         let pairId= createPair pair
@@ -151,7 +158,5 @@ type Persistence(directory: string)=
         let tagIds= getTagIds pair.Tags
         updateAssociations pairId tagIds
   
-    member this.GetPairs =
-        let csv= PersistentPair.Load pairsPath
-        csv.Rows |> Seq.map (loadPair getAssociatedTags)
+    member this.GetPairs() = loadWords() |> List.map (loadPair getAssociatedTags)
         
