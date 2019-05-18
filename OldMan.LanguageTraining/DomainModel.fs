@@ -3,9 +3,7 @@
 open System
 
 // main entities
-type Language = string
-
-type Word = string option * Language
+type Word = string option
 
 type Tag = string
 

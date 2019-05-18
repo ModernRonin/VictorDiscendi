@@ -80,17 +80,11 @@ persisted data structure:
 		config
 			nameLang1, nameLang2
 		wordpairs
-			id, wordL1, wordL2, creationTimestamp
+			id, wordL1, wordL2, creationTimestamp, currentCount, currentScore, lastAsked
 		tags
 			id, name
 		tagWords
 			tagId, pairId
-	scoring
-		quizhistory
-			pairId, timestamp, answeredCorrectly (bool), quizsettings/info (json?)
-
-		scorestate				(this table is completely reconstructable from quizhistory, but makes life easier for quizzing and for stats)
-			pairId, currentCount, currentScore, lastAsked
 		
 		
 
