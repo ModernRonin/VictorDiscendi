@@ -7,7 +7,7 @@ open FSharp.Data
 open Domain
 
 // persistence types
-type PersistentConfiguration = 
+type private PersistentConfiguration = 
     CsvProvider<
         Schema = "LeftLanguageName (string), RightLanguageName (string)",
         HasHeaders=false
@@ -59,33 +59,17 @@ type private PersistentTagPairAssociation=
         >
 let private makePairTagAssociation pairId tagId= PersistentTagPairAssociation.Row (tagId, pairId)
 
-type private Database=
-    {
-        Configuration: PersistentConfiguration
-        WordPairs: PersistentPair list
-        Tags: PersistentTag list
-        TagWordAssociations: PersistentTagPairAssociation list
-    }
 
-
-(*
-update Pair
-    finds corresponding Pair, updates words, lastasked, count, scores
-    creates new PersistentTags as needed
-    creates new PersistentTagWordAssociation as needed
-    deletes PersistentTagWordAssociation as needed
-
-load Pairs
-
-*)
-
-let inline idOf (x: ^R)=
+// helpers
+let inline private idOf (x: ^R)=
     (^R: (member Id: int64) (x))
 
 
 let inline private nextIdIn (rows: ^record seq)= 
     1L + (rows |> Seq.map idOf |> Seq.max)
     
+
+// public interface
 type Persistence(directory: string)=
     let configPath= Path.Combine(directory, "LanguageConfiguration.csv")
     let pairsPath= Path.Combine(directory, "Pairs.csv")
@@ -99,6 +83,14 @@ type Persistence(directory: string)=
         updated.Save pairsPath
         nextId
 
+    let editPair pair=
+        let csv= PersistentPair.Load pairsPath
+        let (left, right)= extractWordTexts pair
+        let oldPair= csv.Rows |> Seq.find (fun p -> p.Left=left && p.Right=right)
+        let newPair= makePair oldPair.Id pair
+        csv.Filter((fun p -> p.Id<>oldPair.Id)).Append(newPair |> Seq.singleton).Save pairsPath
+        oldPair.Id
+
     let getTagIds tags=
         let csv= PersistentTag.Load tagsPath
         let nextId= nextIdIn csv.Rows
@@ -110,6 +102,7 @@ type Persistence(directory: string)=
 
     let updateAssociations pairId tagIds=
         let nu= tagIds |> Seq.map (fun tagId -> makePairTagAssociation pairId tagId)
+        // TODO: for removed tags, check if they are in use by anything else, if no delete them
         let csv= nu |> PersistentTagPairAssociation.Load(associationsPath).Filter((fun a -> a.PairId<>pairId)).Append
         csv.Save associationsPath
         
@@ -125,7 +118,19 @@ type Persistence(directory: string)=
         let pairId= createPair pair
         let tagIds= getTagIds pair.Tags
         updateAssociations pairId tagIds
+
+    member this.updatePair pair=
+        let pairId= editPair pair
+        let tagIds= getTagIds pair.Tags
+        updateAssociations pairId tagIds
         
+        
+(*
+
+load Pairs
+
+*)
+
         
 
 
