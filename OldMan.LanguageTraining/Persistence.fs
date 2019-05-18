@@ -17,13 +17,18 @@ let private deserializeCfg (config: PersistentConfiguration.Row) = {LeftLanguage
 
 type private PersistentPair= 
     CsvProvider<
-        Schema = "Id (int64), Left (string), Right (string), Created (DateTime), LastAsked (DateTime), TimesAsked (int64), LeftScore (int), RightScore (int)",
+        Schema = "Id (int64), Left (string), Right (string), Created (string), LastAsked (string), TimesAsked (int64), LeftScore (int), RightScore (int)",
         HasHeaders=false
         >
 let private serializeWord word = 
     match word with
     | None -> ""
     | Some x -> x
+
+let private deserialize word =
+    match word with
+    | "" -> None
+    | x -> Some x
 
 let private timeFormat= "yyyyMMddHHmmss"
 let private serializeTimestamp (timeStamp: DateTime)= timeStamp.ToString(timeFormat, CultureInfo.InvariantCulture)
@@ -33,6 +38,8 @@ let private extractWordTexts (pair: WordPair)=
     let (left, right) = pair.Pair
     (serializeWord left, serializeWord right)
 
+let private toWordPair left right= (deserialize left, deserialize right)
+    
 let private makePair id pair= 
     let (left, right) = pair |> extractWordTexts
     PersistentPair.Row(id, 
@@ -43,6 +50,20 @@ let private makePair id pair=
                         int64 pair.ScoreCard.TimesAsked, 
                         pair.ScoreCard.LeftScore, 
                         pair.ScoreCard.RightScore)
+
+let private loadPair tagsLoader (pair: PersistentPair.Row) =
+    {
+        Pair= toWordPair pair.Left pair.Right
+        Created = pair.Created |> deserializeTimestamp
+        Tags = tagsLoader pair.Id
+        ScoreCard= 
+            {
+                LastAsked=  pair.LastAsked |> deserializeTimestamp
+                TimesAsked= uint32 pair.TimesAsked
+                LeftScore= pair.LeftScore
+                RightScore= pair.RightScore
+            }
+    }
 
 type private PersistentTag= 
     CsvProvider<
@@ -105,12 +126,18 @@ type Persistence(directory: string)=
         // TODO: for removed tags, check if they are in use by anything else, if no delete them
         let csv= nu |> PersistentTagPairAssociation.Load(associationsPath).Filter((fun a -> a.PairId<>pairId)).Append
         csv.Save associationsPath
-        
-    member this.SaveConfiguration config=  
+
+    let getAssociatedTags pairId=
+        let tagIds= PersistentTagPairAssociation.Load(associationsPath).Filter((fun a -> a.PairId=pairId)).Rows 
+                        |> Seq.map (fun a -> a.TagId) |> Set.ofSeq
+        PersistentTag.Load(tagsPath).Filter((fun t -> tagIds.Contains t.Id)).Rows 
+                        |> Seq.map (fun t -> t.Tag) |> List.ofSeq
+
+    member this.UpdateConfiguration config=  
         let csv= new PersistentConfiguration([serializeCfg config])
         csv.Save configPath
         
-    member this.LoadConfiguration =  
+    member this.GetConfiguration =  
         let csv=  PersistentConfiguration.Load configPath
         csv.Rows |> Seq.head |> deserializeCfg
 
@@ -119,18 +146,12 @@ type Persistence(directory: string)=
         let tagIds= getTagIds pair.Tags
         updateAssociations pairId tagIds
 
-    member this.updatePair pair=
+    member this.UpdatePair pair=
         let pairId= editPair pair
         let tagIds= getTagIds pair.Tags
         updateAssociations pairId tagIds
+  
+    member this.GetPairs =
+        let csv= PersistentPair.Load pairsPath
+        csv.Rows |> Seq.map (loadPair getAssociatedTags)
         
-        
-(*
-
-load Pairs
-
-*)
-
-        
-
-
