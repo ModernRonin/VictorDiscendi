@@ -90,6 +90,14 @@ let inline private nextIdIn (rows: ^record seq)=
     1L + (rows |> Seq.map idOf |> Seq.max)
     
 
+
+type IPersistence=
+    abstract member UpdateConfiguration: LanguageConfiguration->unit
+    abstract member GetConfiguration : unit->LanguageConfiguration
+    abstract member AddPair: WordPair -> unit
+    abstract member UpdatePair: WordPair -> WordPair -> unit
+    abstract member GetPairs: unit -> WordPair list
+
 type DataKind=
     | Configuration
     | Words
@@ -101,10 +109,10 @@ type Saver= DataKind -> string -> unit
 
 type CsvPersistence(loader: Loader, saver: Saver)=
     let loadWords()= Words |> loader |> PersistentPair.ParseRows |> List.ofArray
-    let saveWords w= ((new PersistentPair(w)).SaveToString()) |> saver Words 
     let loadTags()= Tagging |> loader |> PersistentTag.ParseRows |> List.ofArray
-    let saveTags t= ((new PersistentTag(t)).SaveToString()) |> saver Tagging
     let loadAssociations()= WordTagAssociation |> loader |> PersistentTagPairAssociation.ParseRows |> List.ofArray
+    let saveWords w= ((new PersistentPair(w)).SaveToString()) |> saver Words 
+    let saveTags t= ((new PersistentTag(t)).SaveToString()) |> saver Tagging
     let saveAssociations a= ((new PersistentTagPairAssociation(a)).SaveToString()) |> saver WordTagAssociation
     let loadConfig()= Configuration |> loader |> PersistentConfiguration.ParseRows |> Array.head
     let saveConfig c= ((new PersistentConfiguration(c |> Seq.singleton )).SaveToString()) |> saver Configuration
@@ -144,19 +152,20 @@ type CsvPersistence(loader: Loader, saver: Saver)=
         let tagIds= loadAssociations() |> List.filter (fun a -> a.PairId=pairId) |> List.map (fun a -> a.TagId) |> Set.ofList
         loadTags() |> List.filter (fun t -> tagIds.Contains t.Id) |> List.map (fun t -> t.Tag)
 
-    member this.UpdateConfiguration=  serializeCfg >> saveConfig 
+    interface IPersistence with 
+        member this.UpdateConfiguration config=  config |> serializeCfg |> saveConfig 
         
-    member this.GetConfiguration() =  loadConfig() |> deserializeCfg
+        member this.GetConfiguration() =  loadConfig() |> deserializeCfg
 
-    member this.AddPair pair = 
-        let pairId= createPair pair
-        let tagIds= getTagIds pair.Tags
-        updateAssociations pairId tagIds
+        member this.AddPair pair = 
+            let pairId= createPair pair
+            let tagIds= getTagIds pair.Tags
+            updateAssociations pairId tagIds
 
-    member this.UpdatePair oldPair newPair=
-        let pairId= editPair oldPair newPair
-        let tagIds= getTagIds newPair.Tags
-        updateAssociations pairId tagIds
+        member this.UpdatePair oldPair newPair=
+            let pairId= editPair oldPair newPair
+            let tagIds= getTagIds newPair.Tags
+            updateAssociations pairId tagIds
   
-    member this.GetPairs() = loadWords() |> List.map (loadPair getAssociatedTags)
+        member this.GetPairs() = loadWords() |> List.map (loadPair getAssociatedTags)
         

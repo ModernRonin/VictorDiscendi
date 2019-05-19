@@ -23,7 +23,7 @@ let save kind data =
 let create loadResults =
     let loader= loader loadResults
     saveCalls <- Map.empty
-    new UnderTest(loader, save)
+    (new UnderTest(loader, save)) :> IPersistence
     
 module ``GetConfiguration``=
     [<Test>]
