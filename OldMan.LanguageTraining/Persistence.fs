@@ -99,7 +99,7 @@ type DataKind=
 type Loader= DataKind -> string
 type Saver= DataKind -> string -> unit
 
-type Persistence(loader: Loader, saver: Saver)=
+type CsvPersistence(loader: Loader, saver: Saver)=
     let loadWords()= Words |> loader |> PersistentPair.ParseRows |> List.ofArray
     let saveWords w= ((new PersistentPair(w)).SaveToString()) |> saver Words 
     let loadTags()= Tagging |> loader |> PersistentTag.ParseRows |> List.ofArray

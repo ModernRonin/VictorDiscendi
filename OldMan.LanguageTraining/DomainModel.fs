@@ -14,6 +14,7 @@ type ScoreCard =
         LeftScore: int
         RightScore: int
     }
+
 type WordPair= 
      {
         Pair: Word*Word
