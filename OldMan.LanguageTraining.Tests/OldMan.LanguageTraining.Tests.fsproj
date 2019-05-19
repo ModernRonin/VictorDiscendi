@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Include="PersistenceTests.fs" />
+    <Compile Include="CsvPersistenceTests.fs" />
   </ItemGroup>
 
   <ItemGroup>
