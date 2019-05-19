@@ -8,8 +8,6 @@ open OldMan.LanguageTraining.Domain
     
 let shouldNotHappen() = raise (AssertionException("Should not get here"))
 
-type UnderTest= OldMan.LanguageTraining.Persistence.CsvPersistence
-
 let loader returnValues = 
     fun kind -> match returnValues |> Map.ofList |> Map.tryFind kind with
                 | Some x -> x
@@ -23,7 +21,7 @@ let save kind data =
 let create loadResults =
     let loader= loader loadResults
     saveCalls <- Map.empty
-    (new UnderTest(loader, save)) :> IPersistence
+    (new CsvPersistence(loader, save)) :> IPersistence
     
 module ``GetConfiguration``=
     [<Test>]
@@ -75,10 +73,3 @@ module ``GetPairs``=
                                                   }
                                     }
                                 ]
-
-(* fscheck
-when I update config and read it, the result should be what I put in
-when I add n pairs and then do GetPairs, the result should be what I added
-when I add pairs X and Y, then update X for Z, then do GetPairs, I should get Y and Z
-
-*)

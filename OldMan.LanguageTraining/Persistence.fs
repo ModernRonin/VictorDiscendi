@@ -114,7 +114,11 @@ type CsvPersistence(loader: Loader, saver: Saver)=
     let saveWords w= ((new PersistentPair(w)).SaveToString()) |> saver Words 
     let saveTags t= ((new PersistentTag(t)).SaveToString()) |> saver Tagging
     let saveAssociations a= ((new PersistentTagPairAssociation(a)).SaveToString()) |> saver WordTagAssociation
-    let loadConfig()= Configuration |> loader |> PersistentConfiguration.ParseRows |> Array.head
+    let loadConfig()= 
+        match Configuration |> loader |> PersistentConfiguration.ParseRows |> List.ofArray with
+        | [] -> PersistentConfiguration.Row("", "")
+        | head::_ -> head
+
     let saveConfig c= ((new PersistentConfiguration(c |> Seq.singleton )).SaveToString()) |> saver Configuration
 
     let createPair pair= 
