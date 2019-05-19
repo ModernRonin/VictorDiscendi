@@ -3,7 +3,6 @@ editing
     add word pair
     list word pairs
     edit
-    delete
     import csv
 
     word pairs have tags associated
@@ -73,18 +72,7 @@ cross-cutting:
 persisted data structure:
 	(intentionally restricting to 2 languages; multiple languages makes everything a lot more complicated and if we ever want to re-use, like learn a 3rd language,
 	we can just extract the word list of one language to initialize a new db)
-	
 	databasey from the start, so if we ever want to move from files to an SQL backstore, it'll be easy
-
-	words
-		config
-			nameLang1, nameLang2
-		wordpairs
-			id, wordL1, wordL2, creationTimestamp, currentCount, currentScore, lastAsked
-		tags
-			id, name
-		tagWords
-			tagId, pairId
 		
 		
 
