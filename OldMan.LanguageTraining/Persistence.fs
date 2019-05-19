@@ -116,14 +116,14 @@ type Persistence(loader: Loader, saver: Saver)=
         saveWords updated
         nextId
 
-    let editPair pair=
+    let editPair old nu=
         let existing= loadWords()
-        let (left, right)= extractWordTexts pair
-        let oldPair= existing |> List.find (fun p -> p.Left=left && p.Right=right)
-        let newPair= makePair oldPair.Id pair
-        let existingWithoutOld= existing |> List.filter (fun p -> p.Id<>oldPair.Id)
-        newPair :: existingWithoutOld |> saveWords
-        oldPair.Id
+        let (left, right)= extractWordTexts old
+        let oldRecord= existing |> List.find (fun p -> p.Left=left && p.Right=right)
+        let newRecord= makePair oldRecord.Id nu
+        let existingWithoutOld= existing |> List.filter (fun p -> p.Id<>oldRecord.Id)
+        newRecord :: existingWithoutOld |> saveWords
+        oldRecord.Id
 
     let getTagIds tags=
         let existing= loadTags()
@@ -153,9 +153,9 @@ type Persistence(loader: Loader, saver: Saver)=
         let tagIds= getTagIds pair.Tags
         updateAssociations pairId tagIds
 
-    member this.UpdatePair pair=
-        let pairId= editPair pair
-        let tagIds= getTagIds pair.Tags
+    member this.UpdatePair oldPair newPair=
+        let pairId= editPair oldPair newPair
+        let tagIds= getTagIds newPair.Tags
         updateAssociations pairId tagIds
   
     member this.GetPairs() = loadWords() |> List.map (loadPair getAssociatedTags)
