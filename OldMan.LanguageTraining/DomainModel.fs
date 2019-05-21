@@ -17,6 +17,7 @@ type ScoreCard =
 
 type WordPair= 
      {
+        Id: int64
         Pair: Word*Word
         Created: DateTime
         Tags: Tag list
@@ -69,7 +70,8 @@ type TagCondition=
     | TagIsContained of Tag
 
 
-let rec matches condition tags = match condition with
+let rec matches condition tags = 
+    match condition with
     | TagIsContained t -> tags |> List.contains t
     | AndTagCondition (left, right) -> (matches left tags) && (matches right tags)
     | OrTagCondition (left, right) -> (matches left tags) || (matches right tags)

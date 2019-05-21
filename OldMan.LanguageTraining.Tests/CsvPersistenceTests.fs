@@ -51,6 +51,7 @@ module ``GetPairs``=
         let result= underTest.GetPairs() 
         result |> shouldEqual   [
                                     {
+                                        Id= 13L
                                         Pair= (Some "apple", Some "Apfel")
                                         Created= DateTime(2010, 3, 7, 22, 10, 5)
                                         Tags= ["Obst"; "Substantiva"]
@@ -62,6 +63,7 @@ module ``GetPairs``=
                                                   }
                                     }
                                     {
+                                        Id= 17L
                                         Pair= (Some "car", Some "Auto")
                                         Created= DateTime(2010, 3, 7, 22, 11, 7)
                                         Tags= ["Transport"; "Substantiva"]

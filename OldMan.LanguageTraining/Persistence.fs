@@ -2,7 +2,6 @@
 
 open System
 open System.Globalization
-open System.IO
 open FSharp.Data
 open Domain
 
@@ -53,6 +52,7 @@ let private makePair id pair=
 
 let private loadPair tagsLoader (pair: PersistentPair.Row) =
     {
+        Id = pair.Id
         Pair= toWordPair pair.Left pair.Right
         Created = pair.Created |> deserializeTimestamp
         Tags = tagsLoader pair.Id
@@ -94,8 +94,8 @@ let inline private nextIdIn (rows: ^record seq)=
 type IPersistence=
     abstract member UpdateConfiguration: LanguageConfiguration->unit
     abstract member GetConfiguration : unit->LanguageConfiguration
-    abstract member AddPair: WordPair -> unit
-    abstract member UpdatePair: WordPair -> WordPair -> unit
+    abstract member AddPair: WordPair -> WordPair
+    abstract member UpdatePair: int64 -> WordPair -> unit
     abstract member GetPairs: unit -> WordPair list
 
 type DataKind=
@@ -124,18 +124,15 @@ type CsvPersistence(loader: Loader, saver: Saver)=
     let createPair pair= 
         let existing= loadWords()
         let nextId=  nextIdIn existing 
-        let updated= pair |> (makePair nextId) |> List.singleton |> List.append existing
+        let result= pair |> (makePair nextId) 
+        let updated= result |> List.singleton |> List.append existing
         saveWords updated
-        nextId
+        result
 
-    let editPair old nu=
-        let existing= loadWords()
-        let (left, right)= extractWordTexts old
-        let oldRecord= existing |> List.find (fun p -> p.Left=left && p.Right=right)
-        let newRecord= makePair oldRecord.Id nu
-        let existingWithoutOld= existing |> List.filter (fun p -> p.Id<>oldRecord.Id)
+    let editPair id nu=
+        let newRecord= makePair id nu
+        let existingWithoutOld= loadWords() |> List.filter (fun p -> p.Id<>id)
         newRecord :: existingWithoutOld |> saveWords
-        oldRecord.Id
 
     let getTagIds tags=
         let existing= loadTags()
@@ -156,20 +153,23 @@ type CsvPersistence(loader: Loader, saver: Saver)=
         let tagIds= loadAssociations() |> List.filter (fun a -> a.PairId=pairId) |> List.map (fun a -> a.TagId) |> Set.ofList
         loadTags() |> List.filter (fun t -> tagIds.Contains t.Id) |> List.map (fun t -> t.Tag)
 
+    let deserializePair = loadPair getAssociatedTags
+
     interface IPersistence with 
         member this.UpdateConfiguration config=  config |> serializeCfg |> saveConfig 
         
         member this.GetConfiguration() =  loadConfig() |> deserializeCfg
 
         member this.AddPair pair = 
-            let pairId= createPair pair
+            let result= createPair pair
             let tagIds= getTagIds pair.Tags
-            updateAssociations pairId tagIds
+            updateAssociations result.Id tagIds
+            result |> deserializePair
 
-        member this.UpdatePair oldPair newPair=
-            let pairId= editPair oldPair newPair
+        member this.UpdatePair id newPair=
+            editPair id newPair
             let tagIds= getTagIds newPair.Tags
-            updateAssociations pairId tagIds
+            updateAssociations id tagIds
   
-        member this.GetPairs() = loadWords() |> List.map (loadPair getAssociatedTags)
+        member this.GetPairs() = loadWords() |> List.map deserializePair
         
