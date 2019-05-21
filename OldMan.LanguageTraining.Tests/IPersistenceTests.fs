@@ -25,7 +25,10 @@ let createWithEmptyBackStore()=
     (new CsvPersistence(backStore.Load, backStore.Save)) :> IPersistence
 
 // necessary because the CSV type provider does not deal correctly with "\n" in field values
-let isValidString (s:string) = null<>s && not (s.Contains("\n")) && not (s.Contains("\r"))
+//let isValidString (s:string) = null<>s && not (s.Contains("\n")) && not (s.Contains("\r"))
+
+let charSet= "abc"
+let isValidString (s:string) = null<>s && not (s |> Seq.exists (fun c -> not (charSet |> Seq.contains c)))
 let createConfig left right = {LeftLanguageName= left; RightLanguageName= right}
 let generateString= Arb.generate<string> |> Gen.filter isValidString
 let generateConfig= createConfig <!> generateString <*> generateString 

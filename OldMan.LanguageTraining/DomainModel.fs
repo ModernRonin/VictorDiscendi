@@ -2,7 +2,7 @@
 
 open System
 
-// main entities
+// core entities
 type Word = string option
 
 type Tag = string
@@ -45,7 +45,7 @@ type QuestionType=
     | FreeEntry
     
 
-type QuitSettings=
+type QuizSettings=
     {
         Direction: Direction
         Types: QuestionType list
@@ -53,5 +53,25 @@ type QuitSettings=
         MaximumScore: int
     }
 
+
+type Question= WordPair 
+    
+
+type QuestionResult =
+    | Correct
+    | Incorrect
+
+
+// querying
+type TagCondition=
+    | AndTagCondition of TagCondition*TagCondition
+    | OrTagCondition of TagCondition*TagCondition
+    | TagIsContained of Tag
+
+
+let rec matches condition tags = match condition with
+    | TagIsContained t -> tags |> List.contains t
+    | AndTagCondition (left, right) -> (matches left tags) && (matches right tags)
+    | OrTagCondition (left, right) -> (matches left tags) || (matches right tags)
 
                    

@@ -4,15 +4,25 @@ open System
 open OldMan.LanguageTraining.Domain
 open OldMan.LanguageTraining.Persistence
 
-(*
-add word pair (left, right, tags)
-edit word pair (only left, right, tags) - old, nu
-list word pairs (all data)
-list tags (all data)
-list word pairs for tags (only those matching)
-update language names
-get language names
-get question for quizSettings
-score question for question and result
+type InitialWordPair= 
+    {
+        Pair: Word*Word
+        Tags: Tag list
+    }
+type WordPairUpdate=
+    {
+        Old: InitialWordPair
+        New: InitialWordPair
+    }
 
-*)
+
+type IService=
+    abstract member addWordPair: InitialWordPair -> unit
+    abstract member updateWordPair: WordPairUpdate -> unit
+    abstract member listWordPairs: unit -> WordPair list
+    abstract member listWordPairsForTags: TagCondition -> WordPair list
+    abstract member listTags: unit -> Tag list
+    abstract member updateLanguageNames: LanguageConfiguration -> unit
+    abstract member getLanguageNames: unit -> LanguageConfiguration
+    abstract member generateQuestion: QuizSettings -> Question
+    abstract member scoreQuestionResult: Question -> QuestionResult -> unit
