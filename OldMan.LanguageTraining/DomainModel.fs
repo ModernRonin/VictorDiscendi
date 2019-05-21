@@ -36,13 +36,13 @@ type Direction=
     | RightToLeft
     | Both
 
-type MultipleChoice=
+type MultipleChoiceSettings=
     {
         NumberOfChoices: uint8
     }
 
 type QuestionType=
-    | MultipleChoice of MultipleChoice
+    | MultipleChoice of MultipleChoiceSettings
     | FreeEntry
     
 
@@ -54,8 +54,31 @@ type QuizSettings=
         MaximumScore: int
     }
 
+type Side= 
+    | Left
+    | Right
 
-type Question= WordPair 
+type FreeEntryQuestion=
+    {
+        Prompt: string
+        CorrectAnswer: string
+    }
+
+type MultipleChoiceQuestion=
+    {
+        Choices: string list
+        CorrectAnswer: string
+    }
+
+type Question=
+    | FreeEntryQuestion of FreeEntryQuestion
+    | MultipleChoiceQuestion of MultipleChoiceQuestion
+
+type WordReference= 
+    {
+        PairId: int64
+        Side: Side
+    }
     
 
 type QuestionResult =

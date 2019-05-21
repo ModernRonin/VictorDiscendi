@@ -12,5 +12,5 @@ type IService=
     abstract member listTags: unit -> Tag list
     abstract member updateLanguageNames: LanguageConfiguration -> unit
     abstract member getLanguageNames: unit -> LanguageConfiguration
-    abstract member generateQuestion: QuizSettings -> Question
-    abstract member scoreQuestionResult: Question -> QuestionResult -> unit
+    abstract member generateQuestion: QuizSettings -> WordReference*Question
+    abstract member scoreQuestionResult: WordReference*Question*QuestionResult -> unit
