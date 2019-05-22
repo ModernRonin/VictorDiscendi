@@ -93,10 +93,10 @@ type TagCondition=
     | TagIsContained of Tag
 
 
-let rec matches condition tags = 
+let rec doTagsMatch condition tags = 
     match condition with
     | TagIsContained t -> tags |> List.contains t
-    | AndTagCondition (left, right) -> (matches left tags) && (matches right tags)
-    | OrTagCondition (left, right) -> (matches left tags) || (matches right tags)
+    | AndTagCondition (left, right) -> (doTagsMatch left tags) && (doTagsMatch right tags)
+    | OrTagCondition (left, right) -> (doTagsMatch left tags) || (doTagsMatch right tags)
 
                    
