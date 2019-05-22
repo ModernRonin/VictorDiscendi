@@ -15,6 +15,15 @@ type ScoreCard =
         RightScore: int
     }
 
+let createNewScoreCard()=
+    {
+        LastAsked= DateTime.UtcNow
+        TimesAsked= uint32 0
+        LeftScore= -3
+        RightScore= -3
+    }
+
+
 type WordPair= 
      {
         Id: int64
@@ -23,6 +32,16 @@ type WordPair=
         Tags: Tag list
         ScoreCard: ScoreCard
      }
+
+let createNewWordPair words tags=
+    {
+        Pair = words
+        Tags= tags
+        Id = 0
+        Created= DateTime.UtcNow
+        ScoreCard= createNewScoreCard()
+    }
+
 
 type LanguageConfiguration= 
     {
