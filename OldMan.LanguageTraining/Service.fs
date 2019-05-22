@@ -34,10 +34,23 @@ type Service(persistence: IPersistence)=
 
 
     member this.listWordPairsForTags condition=
-        this.listWordPairs() |> List.filter (fun p -> doTagsMatch condition p.Tags)
+        this.listWordPairs() |> matchTags condition
 
     member this.listTags()=
         this.listWordPairs() |> List.map (fun p -> p.Tags) |> List.distinct
 
-    member this.generateQuestion settings=
+    //member this.generateQuestion= createQuestion
+
+    //member this.scoreQuestionResult= scoreQuestion
         
+        
+
+
+
+
+
+
+(* TODO:
+make Tags also include Id because we want to be able to rename a tag everywhere,
+eventually
+*)

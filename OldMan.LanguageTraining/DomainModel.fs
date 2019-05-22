@@ -15,15 +15,6 @@ type ScoreCard =
         RightScore: int
     }
 
-let createNewScoreCard()=
-    {
-        LastAsked= DateTime.UtcNow
-        TimesAsked= uint32 0
-        LeftScore= -3
-        RightScore= -3
-    }
-
-
 type WordPair= 
      {
         Id: int64
@@ -32,16 +23,6 @@ type WordPair=
         Tags: Tag list
         ScoreCard: ScoreCard
      }
-
-let createNewWordPair words tags=
-    {
-        Pair = words
-        Tags= tags
-        Id = 0
-        Created= DateTime.UtcNow
-        ScoreCard= createNewScoreCard()
-    }
-
 
 type LanguageConfiguration= 
     {
@@ -64,12 +45,16 @@ type QuestionType=
     | MultipleChoice of MultipleChoiceSettings
     | FreeEntry
     
+type TagCondition=
+    | AndTagCondition of TagCondition*TagCondition
+    | OrTagCondition of TagCondition*TagCondition
+    | TagIsContained of Tag
 
 type QuizSettings=
     {
         Direction: Direction
         Types: QuestionType list
-        TagsToInclude: Tag list
+        TagsToInclude: TagCondition
         MaximumScore: int
     }
 
@@ -99,18 +84,30 @@ type WordReference=
         Side: Side
     }
     
-
 type QuestionResult =
     | Correct
     | Incorrect
 
 
-// querying
-type TagCondition=
-    | AndTagCondition of TagCondition*TagCondition
-    | OrTagCondition of TagCondition*TagCondition
-    | TagIsContained of Tag
 
+
+// operations
+let createNewScoreCard()=
+    {
+        LastAsked= DateTime.UtcNow
+        TimesAsked= uint32 0
+        LeftScore= -3
+        RightScore= -3
+    }
+
+let createNewWordPair words tags=
+    {
+        Pair = words
+        Tags= tags
+        Id = 0L
+        Created= DateTime.UtcNow
+        ScoreCard= createNewScoreCard()
+    }
 
 let rec doTagsMatch condition tags = 
     match condition with
@@ -118,4 +115,19 @@ let rec doTagsMatch condition tags =
     | AndTagCondition (left, right) -> (doTagsMatch left tags) && (doTagsMatch right tags)
     | OrTagCondition (left, right) -> (doTagsMatch left tags) || (doTagsMatch right tags)
 
-                   
+let matchTags condition pairs= pairs |> List.filter (fun p -> doTagsMatch condition p.Tags)
+
+let getScoreForDirection direction pair = 
+    match direction with
+    | LeftToRight -> pair.ScoreCard.LeftScore
+    | RightToLeft -> pair.ScoreCard.RightScore
+    | Both -> [pair.ScoreCard.LeftScore; pair.ScoreCard.RightScore] |> List.min
+
+let matchScore direction maxScore pairs = 
+    pairs |> List.filter (fun p -> getScoreForDirection direction p <= maxScore)
+
+let getCandidates settings pairs= 
+    let matchTags= matchTags settings.TagsToInclude
+    let matchScore= matchScore settings.Direction settings.MaximumScore
+    pairs |> matchTags |> matchScore
+    
