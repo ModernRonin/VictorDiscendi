@@ -35,6 +35,12 @@ type private Word with
         | Word (Some x) -> x
     static member Deserialize (from: string)= Word (Some from)
 
+let private timeFormat= "yyyyMMddHHmmss"
+type private DateTime with
+    member this.Serialize()= this.ToString(timeFormat, CultureInfo.InvariantCulture)
+    static member Deserialize (from: string)= DateTime.ParseExact(from, timeFormat, CultureInfo.InvariantCulture)
+
+
 // persistence types
 type private PersistentConfiguration = 
     CsvProvider<
@@ -50,9 +56,6 @@ type private PersistentPair=
         HasHeaders=false
         >
 
-let private timeFormat= "yyyyMMddHHmmss"
-let private serializeTimestamp (timeStamp: DateTime)= timeStamp.ToString(timeFormat, CultureInfo.InvariantCulture)
-let private deserializeTimestamp asString= DateTime.ParseExact(asString, timeFormat, CultureInfo.InvariantCulture)
 
 
 let private extractWordTexts (pair: WordPair)= 
@@ -68,8 +71,8 @@ let private makePair id pair=
     PersistentPair.Row(id, 
                         left, 
                         right, 
-                        pair.Created |> serializeTimestamp, 
-                        pair.ScoreCard.LastAsked |> serializeTimestamp, 
+                        pair.Created.Serialize(), 
+                        pair.ScoreCard.LastAsked.Serialize(), 
                         pair.ScoreCard.TimesAsked.Serialize(),
                         pair.ScoreCard.LeftScore.Serialize(), 
                         pair.ScoreCard.RightScore.Serialize())
@@ -78,11 +81,11 @@ let private loadPair tagsLoader (pair: PersistentPair.Row) =
     {
         Id = pair.Id |> Id.Deserialize
         Pair= toWordPair pair.Left pair.Right
-        Created = pair.Created |> deserializeTimestamp
+        Created = pair.Created |> DateTime.Deserialize
         Tags = tagsLoader pair.Id
         ScoreCard= 
             {
-                LastAsked=  pair.LastAsked |> deserializeTimestamp
+                LastAsked=  pair.LastAsked |> DateTime.Deserialize
                 TimesAsked= pair.TimesAsked |> Count.Deserialize
                 LeftScore= pair.LeftScore |> Score.Deserialize
                 RightScore= pair.RightScore |> Score.Deserialize
