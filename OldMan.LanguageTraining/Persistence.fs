@@ -57,9 +57,8 @@ type private Id with
 type private Word with
     member this.Serialize()=
         match this with
-        | Word None -> ""
-        | Word (Some x) -> x
-    static member Deserialize (from: string)= Word (Some from)
+        | Word x -> x
+    static member Deserialize (from: string)= Word from
 
 let private timeFormat= "yyyyMMddHHmmss"
 type private DateTime with
@@ -71,15 +70,10 @@ type private LanguageConfiguration with
     static member Deserialize (from: PersistentConfiguration.Row)= {LeftLanguageName= from.LeftLanguageName; RightLanguageName= from.RightLanguageName}
 
 type private WordPair with 
-    member this.ExtractWords()=
-        let (left, right) = this.Pair
-        (left.Serialize(), right.Serialize())
     member this.Serialize() = 
-        let (left, right) = this.ExtractWords()
-
         PersistentPair.Row( this.Id.Serialize(), 
-                            left, 
-                            right, 
+                            this.Left.Serialize(), 
+                            this.Right.Serialize(), 
                             this.Created.Serialize(), 
                             this.ScoreCard.LastAsked.Serialize(), 
                             this.ScoreCard.TimesAsked.Serialize(),
@@ -89,7 +83,8 @@ type private WordPair with
     static member Deserialize tagsLoader (pair: PersistentPair.Row) =
         {
             Id = pair.Id |> Id.Deserialize
-            Pair= (pair.Left |> Word.Deserialize, pair.Right |> Word.Deserialize)
+            Left= pair.Left |> Word.Deserialize
+            Right= pair.Right |> Word.Deserialize
             Created = pair.Created |> DateTime.Deserialize
             Tags = tagsLoader pair.Id
             ScoreCard= 

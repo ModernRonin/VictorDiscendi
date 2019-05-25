@@ -17,20 +17,16 @@ type IService=
 
 
 type Service(persistence: IPersistence)=
-    let toWordPair (definition: Word*Word*Tag list)=
-        let (left, right, tags)= definition
-        createNewWordPair (left, right) tags 
-
     //interface IService with
     member this.listWordPairs=  persistence.GetPairs
     member this.updateLanguageNames= persistence.UpdateConfiguration
     member this.getLanguageNames= persistence.GetConfiguration
 
     member this.addWordPair (definition: Word*Word*Tag list)=
-        definition |> toWordPair |> persistence.AddPair 
+        definition |> createNewWordPair |> persistence.AddPair 
 
     member this.updateWordPair id (definition: Word*Word*Tag list)=
-        {(definition |> toWordPair) with Id=id} |> persistence.UpdatePair
+        {(definition |> createNewWordPair) with Id=id} |> persistence.UpdatePair
 
 
     member this.listWordPairsForTags condition=

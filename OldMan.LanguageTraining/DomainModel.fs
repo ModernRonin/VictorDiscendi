@@ -3,7 +3,7 @@
 open System
 
 // core entities
-type Word = Word of (string option)
+type Word = Word of string
 
 type Score = Score of int with
     static member Start= Score (-3)
@@ -40,7 +40,8 @@ type ScoreCard =
 type WordPair= 
      {
         Id: Id
-        Pair: Word*Word
+        Left: Word
+        Right: Word
         Created: DateTime
         Tags: Tag list
         ScoreCard: ScoreCard
@@ -124,9 +125,11 @@ let createNewScoreCard()=
         RightScore= Score.Start
     }
 
-let createNewWordPair words tags=
+let createNewWordPair definition=
+    let (left, right, tags)= definition
     {
-        Pair = words
+        Left= left
+        Right= right
         Tags= tags
         Id = Id.Uninitialized
         Created= DateTime.UtcNow
@@ -142,10 +145,26 @@ let rec doTagsMatch condition tags =
 type RawQuestion=
     {
         PairId: Id
-
+        Question: string 
+        Answer: string 
+        Direction: Direction
+        Score: Score
     }
 
+//let toRawQuestions pair=
+//    [
+//        {
+//            PairId= pair.Id
+//            Question= pair.Left
+//            Answer= pair.Right
+//            Direction= LeftToRight
+//            Score= pair.ScoreCard.LeftScore
 
+//        }
+//        {
+//        }
+//    ]
+    
 let matchTags condition pairs= pairs |> List.filter (fun p -> doTagsMatch condition p.Tags)
 
 let getScoreForDirection direction pair = 
