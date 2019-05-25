@@ -36,8 +36,7 @@ type Service(persistence: IPersistence)=
     member this.listWordPairsForTags condition=
         this.listWordPairs() |> matchTags condition
 
-    member this.listTags()=
-        this.listWordPairs() |> List.map (fun p -> p.Tags) |> List.distinct
+    member this.listTags()= persistence.GetTags()
 
     //member this.generateQuestion= createQuestion
 

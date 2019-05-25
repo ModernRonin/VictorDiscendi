@@ -125,6 +125,8 @@ type IPersistence=
     abstract member AddPair: WordPair -> WordPair
     abstract member UpdatePair: WordPair -> unit
     abstract member GetPairs: unit -> WordPair list
+    abstract member GetTags: unit -> Tag list
+    abstract member UpdateTag: Tag -> unit
 
 type DataKind=
     | Configuration
@@ -161,8 +163,6 @@ type CsvPersistence(loader: Loader, saver: Saver)=
         let newRecord= nu.Serialize()
         let existingWithoutOld= loadWords() |> List.filter (fun p -> p.Id<>nu.Id.Serialize())
         newRecord :: existingWithoutOld |> saveWords
-
-    
         
     let getTagIds (tags: Tag list)=
         let existing= loadTags() 
@@ -204,4 +204,13 @@ type CsvPersistence(loader: Loader, saver: Saver)=
             updateAssociations (newPair.Id.Serialize()) tagIds
   
         member this.GetPairs() = loadWords() |> List.map deserializePair
+
+        member this.GetTags() = loadTags() |> List.map Tag.Deserialize
+        
+        member this.UpdateTag newTag = 
+            let serialized= newTag.Serialize()
+            let others= loadTags() |> List.filter (fun t -> t.Id<>serialized.Id)
+            let updated= serialized :: others
+            updated |> saveTags
+
         
