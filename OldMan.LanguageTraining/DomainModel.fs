@@ -3,7 +3,8 @@
 open System
 
 // core entities
-type Word = Word of string
+type Word = Word of string 
+    
 
 type Score = Score of int with
     static member Start= Score (-3)
@@ -78,7 +79,7 @@ type TagCondition=
 type QuizSettings=
     {
         Direction: Direction
-        Types: QuestionType list
+        Type: QuestionType
         TagsToInclude: TagCondition
         MaximumScore: Score
     }
@@ -145,39 +146,67 @@ let rec doTagsMatch condition tags =
 type RawQuestion=
     {
         PairId: Id
-        Question: string 
-        Answer: string 
-        Direction: Direction
+        Question: Word 
+        Answer: Word 
+        SideOfAnswer: Side
         Score: Score
+        LastAsked: DateTime
+
     }
 
-//let toRawQuestions pair=
-//    [
-//        {
-//            PairId= pair.Id
-//            Question= pair.Left
-//            Answer= pair.Right
-//            Direction= LeftToRight
-//            Score= pair.ScoreCard.LeftScore
-
-//        }
-//        {
-//        }
-//    ]
+let createMultipleChoiceQuestion raw settings pairs= 
     
+
+let createFreeEntryQuestion raw = 
+    let unwrap (Word text)= text
+    {
+        Prompt= unwrap raw.Question
+        CorrectAnswer= unwrap raw.Answer
+    }
+    
+let toRawQuestions pair=
+    [
+        {
+            PairId= pair.Id
+            Question= pair.Left
+            Answer= pair.Right
+            SideOfAnswer= Right
+            Score= pair.ScoreCard.LeftScore
+            LastAsked= pair.ScoreCard.LastAsked
+        }
+        {
+            PairId= pair.Id
+            Question= pair.Right
+            Answer= pair.Left
+            SideOfAnswer= Left
+            Score= pair.ScoreCard.LeftScore
+            LastAsked= pair.ScoreCard.LastAsked
+        }
+    ]
+    
+
 let matchTags condition pairs= pairs |> List.filter (fun p -> doTagsMatch condition p.Tags)
-
-let getScoreForDirection direction pair = 
-    match direction with
-    | LeftToRight -> pair.ScoreCard.LeftScore
-    | RightToLeft -> pair.ScoreCard.RightScore
-    | Both -> [pair.ScoreCard.LeftScore; pair.ScoreCard.RightScore] |> List.min
-
-let matchScore direction maxScore pairs = 
-    pairs |> List.filter (fun p -> getScoreForDirection direction p <= maxScore)
 
 let getCandidates settings pairs= 
     let matchTags= matchTags settings.TagsToInclude
-    let matchScore= matchScore settings.Direction settings.MaximumScore
-    pairs |> matchTags |> matchScore
+    let matchSide raw= 
+        match settings.Direction with
+        | Both -> true
+        | LeftToRight -> raw.SideOfAnswer=Right
+        | RightToLeft -> raw.SideOfAnswer=Left
+    let matchScore raw= raw.Score<=settings.MaximumScore
+
+    pairs |> matchTags |> List.collect toRawQuestions 
+          |> List.filter matchSide |> List.filter matchScore
+
+let toQuestion settings pairs raw=
+    match settings.Type with
+    | FreeEntry -> createFreeEntryQuestion raw
+    | MultipleChoice choiceSettings -> createMultipleChoiceQuestion raw choiceSettings pairs
+
+let createQuestion settings pairs=
+    let raw = getCandidates settings pairs |> List.minBy (fun r -> r.LastAsked)
+    let question= raw |> toQuestion settings pairs
+
+
     
