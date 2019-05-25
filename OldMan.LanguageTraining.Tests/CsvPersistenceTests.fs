@@ -52,7 +52,7 @@ module ``GetPairs``=
         result |> shouldEqual   [
                                     {
                                         Id= Id 13L
-                                        Pair= (Some "apple", Some "Apfel")
+                                        Pair= (Word (Some "apple"), Word (Some "Apfel"))
                                         Created= DateTime(2010, 3, 7, 22, 10, 5)
                                         Tags= ["Obst"; "Substantiva"]
                                         ScoreCard={
@@ -64,7 +64,7 @@ module ``GetPairs``=
                                     }
                                     {
                                         Id= Id 17L
-                                        Pair= (Some "car", Some "Auto")
+                                        Pair= (Word (Some "car"), Word (Some "Auto"))
                                         Created= DateTime(2010, 3, 7, 22, 11, 7)
                                         Tags= ["Transport"; "Substantiva"]
                                         ScoreCard={

@@ -3,7 +3,7 @@
 open System
 
 // core entities
-type Word = string option
+type Word = Word of (string option)
 
 type Tag = string
 

@@ -28,6 +28,13 @@ type private Id with
         | Id x -> x
     static member Deserialize (from: int64)= Id from
 
+type private Word with
+    member this.Serialize()=
+        match this with
+        | Word None -> ""
+        | Word (Some x) -> x
+    static member Deserialize (from: string)= Word (Some from)
+
 // persistence types
 type private PersistentConfiguration = 
     CsvProvider<
@@ -42,15 +49,6 @@ type private PersistentPair=
         Schema = "Id (int64), Left (string), Right (string), Created (string), LastAsked (string), TimesAsked (int64), LeftScore (int), RightScore (int)",
         HasHeaders=false
         >
-let private serializeWord word = 
-    match word with
-    | None -> ""
-    | Some x -> x
-
-let private deserialize word =
-    match word with
-    | "" -> None
-    | x -> Some x
 
 let private timeFormat= "yyyyMMddHHmmss"
 let private serializeTimestamp (timeStamp: DateTime)= timeStamp.ToString(timeFormat, CultureInfo.InvariantCulture)
@@ -59,9 +57,9 @@ let private deserializeTimestamp asString= DateTime.ParseExact(asString, timeFor
 
 let private extractWordTexts (pair: WordPair)= 
     let (left, right) = pair.Pair
-    (serializeWord left, serializeWord right)
+    (left.Serialize(), right.Serialize())
 
-let private toWordPair left right= (deserialize left, deserialize right)
+let private toWordPair left right= (left |> Word.Deserialize, right |> Word.Deserialize)
     
 
 let private makePair id pair= 
