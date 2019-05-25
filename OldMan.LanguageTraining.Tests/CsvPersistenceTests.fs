@@ -22,7 +22,8 @@ let create loadResults =
     let loader= loader loadResults
     saveCalls <- Map.empty
     (new CsvPersistence(loader, save)) :> IPersistence
-    
+
+   
 module ``GetConfiguration``=
     [<Test>]
     let ``loads from CSV``() =
@@ -54,7 +55,16 @@ module ``GetPairs``=
                                         Id= Id 13L
                                         Pair= (Word (Some "apple"), Word (Some "Apfel"))
                                         Created= DateTime(2010, 3, 7, 22, 10, 5)
-                                        Tags= ["Obst"; "Substantiva"]
+                                        Tags= [
+                                                {
+                                                    Id= Id.From 19
+                                                    Text="Obst"
+                                                }; 
+                                                {
+                                                    Id= Id.From 29
+                                                    Text= "Substantiva"
+                                                }
+                                               ] 
                                         ScoreCard={
                                                         LastAsked= DateTime(2019,4,1,10, 0, 0)
                                                         TimesAsked= Count (uint32 3)
@@ -66,7 +76,16 @@ module ``GetPairs``=
                                         Id= Id 17L
                                         Pair= (Word (Some "car"), Word (Some "Auto"))
                                         Created= DateTime(2010, 3, 7, 22, 11, 7)
-                                        Tags= ["Transport"; "Substantiva"]
+                                        Tags= [
+                                                {
+                                                    Id= Id.From 23
+                                                    Text="Transport"
+                                                }; 
+                                                {
+                                                    Id= Id.From 29
+                                                    Text= "Substantiva"
+                                                }
+                                               ] 
                                         ScoreCard={
                                                         LastAsked= DateTime(2019,4,2,11, 0, 0)
                                                         TimesAsked= Count (uint32 4)

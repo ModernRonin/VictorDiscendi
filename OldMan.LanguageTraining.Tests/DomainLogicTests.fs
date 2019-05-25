@@ -6,9 +6,10 @@ open OldMan.LanguageTraining.Domain
 
 module doTagsMatch=
     let underTest= OldMan.LanguageTraining.Domain.doTagsMatch
+    let toTags= List.map Tag.Create
 
     module ``for a TagIsCondition``=
-        let underTest= underTest (TagIsContained "alpha")
+        let underTest= underTest (TagCondition.From "alpha")
 
         [<Test>]
         let ``and an empty list is false``()=
@@ -16,56 +17,56 @@ module doTagsMatch=
 
         [<Test>]
         let ``and a list containing the desired tag is true``()=
-            ["charlie"; "alpha"; "bravo"] |> underTest |> shouldEqual true
+            ["charlie"; "alpha"; "bravo"] |> toTags |> underTest |> shouldEqual true
 
         [<Test>]
         let ``and a list not containing the desired tag is false``()=
-            ["bravo"; "charlie"] |> underTest |> shouldEqual false
+            ["bravo"; "charlie"] |> toTags |> underTest |> shouldEqual false
 
     module ``for an AndTagCondition``=
         let underTest= underTest (AndTagCondition 
                                     (
-                                        (TagIsContained "a"), 
-                                        (TagIsContained "b")
-                                     )
-                                  )
+                                        (TagCondition.From "a"), 
+                                        (TagCondition.From "b")
+                                    )
+                                 )
 
         [<Test>]
         let ``and a list matching neither sub-condition is false``()=
-            ["x"; "y"; "z"] |> underTest |> shouldEqual false
+            ["x"; "y"; "z"] |> toTags |> underTest |> shouldEqual false
 
         [<Test>]
         let ``and a list only matching the second sub-condition is false``()=
-            ["x"; "b"; "z"] |> underTest |> shouldEqual false
+            ["x"; "b"; "z"] |> toTags |> underTest |> shouldEqual false
 
         [<Test>]
         let ``and a list only matching the first sub-condition is false``()=
-            ["x"; "a"; "z"] |> underTest |> shouldEqual false
+            ["x"; "a"; "z"] |> toTags |> underTest |> shouldEqual false
 
         [<Test>]
         let ``and a list matching both sub-conditions is true``()=
-            ["x"; "a"; "z"; "b"] |> underTest |> shouldEqual true
+            ["x"; "a"; "z"; "b"] |> toTags |> underTest |> shouldEqual true
 
     module ``for an OrTagCondition``=
         let underTest= underTest (OrTagCondition 
                                     (
-                                        (TagIsContained "a"), 
-                                        (TagIsContained "b")
+                                        (TagCondition.From "a"), 
+                                        (TagCondition.From "b")
                                      )
                                   )
 
         [<Test>]
         let ``and a list matching neither sub-condition is false``()=
-            ["x"; "y"; "z"] |> underTest |> shouldEqual false
+            ["x"; "y"; "z"] |> toTags |> underTest |> shouldEqual false
 
         [<Test>]
         let ``and a list only matching the first sub-condition is true``()=
-            ["x"; "a"; "z"] |> underTest |> shouldEqual true
+            ["x"; "a"; "z"] |> toTags |> underTest |> shouldEqual true
 
         [<Test>]
         let ``and a list onyl matching the second sub-condition is true``()=
-            ["x"; "b"; "z"] |> underTest |> shouldEqual true
+            ["x"; "b"; "z"] |> toTags |> underTest |> shouldEqual true
 
         [<Test>]
         let ``and a list matching both sub-conditions is true``()=
-            ["x"; "a"; "z"; "b"] |> underTest |> shouldEqual true
+            ["x"; "a"; "z"; "b"] |> toTags |> underTest |> shouldEqual true

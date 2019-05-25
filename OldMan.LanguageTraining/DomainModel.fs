@@ -5,8 +5,6 @@ open System
 // core entities
 type Word = Word of (string option)
 
-type Tag = string
-
 type Score = Score of int with
     static member Start= Score (-3)
 
@@ -18,6 +16,18 @@ type SmallCount= SmallCount of uint8 with
 
 type Id = Id of int64 with
     static member Uninitialized= Id (int64 0)
+    static member From (what: int)= Id (int64 what)
+
+type Tag = 
+    {
+        Id: Id
+        Text: string
+    } with
+    static member Create tag = 
+        {
+            Id = Id.Uninitialized
+            Text= tag
+        }
 
 type ScoreCard = 
     {
@@ -60,7 +70,9 @@ type QuestionType=
 type TagCondition=
     | AndTagCondition of TagCondition*TagCondition
     | OrTagCondition of TagCondition*TagCondition
-    | TagIsContained of Tag
+    | TagIsContained of Tag with
+    static member From (tag: string)= tag |> Tag.Create |> TagIsContained
+        
 
 type QuizSettings=
     {

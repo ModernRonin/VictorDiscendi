@@ -30,7 +30,7 @@ type Service(persistence: IPersistence)=
         definition |> toWordPair |> persistence.AddPair 
 
     member this.updateWordPair id (definition: Word*Word*Tag list)=
-        definition |> toWordPair |> persistence.UpdatePair id
+        {(definition |> toWordPair) with Id=id} |> persistence.UpdatePair
 
 
     member this.listWordPairsForTags condition=
@@ -50,7 +50,3 @@ type Service(persistence: IPersistence)=
 
 
 
-(* TODO:
-make Tags also include Id because we want to be able to rename a tag everywhere,
-eventually
-*)
