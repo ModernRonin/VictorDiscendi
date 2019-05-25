@@ -51,27 +51,27 @@ module ``GetPairs``=
         let result= underTest.GetPairs() 
         result |> shouldEqual   [
                                     {
-                                        Id= 13L
+                                        Id= Id 13L
                                         Pair= (Some "apple", Some "Apfel")
                                         Created= DateTime(2010, 3, 7, 22, 10, 5)
                                         Tags= ["Obst"; "Substantiva"]
                                         ScoreCard={
                                                         LastAsked= DateTime(2019,4,1,10, 0, 0)
-                                                        TimesAsked= uint32 3
-                                                        LeftScore= 2
-                                                        RightScore= -1
+                                                        TimesAsked= Count (uint32 3)
+                                                        LeftScore= Score 2
+                                                        RightScore= Score -1
                                                   }
                                     }
                                     {
-                                        Id= 17L
+                                        Id= Id 17L
                                         Pair= (Some "car", Some "Auto")
                                         Created= DateTime(2010, 3, 7, 22, 11, 7)
                                         Tags= ["Transport"; "Substantiva"]
                                         ScoreCard={
                                                         LastAsked= DateTime(2019,4,2,11, 0, 0)
-                                                        TimesAsked= uint32 4
-                                                        LeftScore= 3
-                                                        RightScore= -2
+                                                        TimesAsked= Count (uint32 4)
+                                                        LeftScore= Score 3
+                                                        RightScore= Score -2
                                                   }
                                     }
                                 ]

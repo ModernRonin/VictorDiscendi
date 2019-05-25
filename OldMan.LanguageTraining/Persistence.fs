@@ -5,6 +5,29 @@ open System.Globalization
 open FSharp.Data
 open Domain
 
+// serialization extensions
+type private Count with
+    member this.Serialize()= 
+        match this with
+        | Count x -> int64 x
+
+    static member Deserialize (from: int64)=
+        match from with 
+        | x when int64 0<=x -> Count(uint32 x)
+        | _ -> raise  (ArgumentOutOfRangeException ("count"))
+
+type private Score with 
+    member this.Serialize()=
+        match this with 
+        | Score x -> x
+    static member Deserialize (from: int)= Score from
+
+type private Id with 
+    member this.Serialize()= 
+        match this with 
+        | Id x -> x
+    static member Deserialize (from: int64)= Id from
+
 // persistence types
 type private PersistentConfiguration = 
     CsvProvider<
@@ -33,35 +56,38 @@ let private timeFormat= "yyyyMMddHHmmss"
 let private serializeTimestamp (timeStamp: DateTime)= timeStamp.ToString(timeFormat, CultureInfo.InvariantCulture)
 let private deserializeTimestamp asString= DateTime.ParseExact(asString, timeFormat, CultureInfo.InvariantCulture)
 
+
 let private extractWordTexts (pair: WordPair)= 
     let (left, right) = pair.Pair
     (serializeWord left, serializeWord right)
 
 let private toWordPair left right= (deserialize left, deserialize right)
     
+
 let private makePair id pair= 
     let (left, right) = pair |> extractWordTexts
+    
     PersistentPair.Row(id, 
                         left, 
                         right, 
                         pair.Created |> serializeTimestamp, 
                         pair.ScoreCard.LastAsked |> serializeTimestamp, 
-                        int64 pair.ScoreCard.TimesAsked, 
-                        pair.ScoreCard.LeftScore, 
-                        pair.ScoreCard.RightScore)
+                        pair.ScoreCard.TimesAsked.Serialize(),
+                        pair.ScoreCard.LeftScore.Serialize(), 
+                        pair.ScoreCard.RightScore.Serialize())
 
 let private loadPair tagsLoader (pair: PersistentPair.Row) =
     {
-        Id = pair.Id
+        Id = pair.Id |> Id.Deserialize
         Pair= toWordPair pair.Left pair.Right
         Created = pair.Created |> deserializeTimestamp
         Tags = tagsLoader pair.Id
         ScoreCard= 
             {
                 LastAsked=  pair.LastAsked |> deserializeTimestamp
-                TimesAsked= uint32 pair.TimesAsked
-                LeftScore= pair.LeftScore
-                RightScore= pair.RightScore
+                TimesAsked= pair.TimesAsked |> Count.Deserialize
+                LeftScore= pair.LeftScore |> Score.Deserialize
+                RightScore= pair.RightScore |> Score.Deserialize
             }
     }
 

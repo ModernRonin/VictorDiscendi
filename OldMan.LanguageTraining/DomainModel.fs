@@ -7,17 +7,29 @@ type Word = string option
 
 type Tag = string
 
+type Score = Score of int with
+    static member Start= Score (-3)
+
+type Count = Count of uint32 with
+    static member Zero= Count (uint32 0)
+
+type SmallCount= SmallCount of uint8 with
+    static member Zero= SmallCount (uint8 0)
+
+type Id = Id of int64 with
+    static member Uninitialized= Id (int64 0)
+
 type ScoreCard = 
     {
         LastAsked: DateTime
-        TimesAsked: uint32
-        LeftScore: int
-        RightScore: int
+        TimesAsked: Count
+        LeftScore: Score
+        RightScore: Score
     }
 
 type WordPair= 
      {
-        Id: int64
+        Id: Id
         Pair: Word*Word
         Created: DateTime
         Tags: Tag list
@@ -38,7 +50,7 @@ type Direction=
 
 type MultipleChoiceSettings=
     {
-        NumberOfChoices: uint8
+        NumberOfChoices: SmallCount
     }
 
 type QuestionType=
@@ -55,7 +67,7 @@ type QuizSettings=
         Direction: Direction
         Types: QuestionType list
         TagsToInclude: TagCondition
-        MaximumScore: int
+        MaximumScore: Score
     }
 
 type Side= 
@@ -80,7 +92,7 @@ type Question=
 
 type WordReference= 
     {
-        PairId: int64
+        PairId: Id
         Side: Side
     }
     
@@ -95,16 +107,16 @@ type QuestionResult =
 let createNewScoreCard()=
     {
         LastAsked= DateTime.UtcNow
-        TimesAsked= uint32 0
-        LeftScore= -3
-        RightScore= -3
+        TimesAsked= Count.Zero
+        LeftScore= Score.Start
+        RightScore= Score.Start
     }
 
 let createNewWordPair words tags=
     {
         Pair = words
         Tags= tags
-        Id = 0L
+        Id = Id.Uninitialized
         Created= DateTime.UtcNow
         ScoreCard= createNewScoreCard()
     }
@@ -114,6 +126,13 @@ let rec doTagsMatch condition tags =
     | TagIsContained t -> tags |> List.contains t
     | AndTagCondition (left, right) -> (doTagsMatch left tags) && (doTagsMatch right tags)
     | OrTagCondition (left, right) -> (doTagsMatch left tags) || (doTagsMatch right tags)
+
+type RawQuestion=
+    {
+        PairId: Id
+
+    }
+
 
 let matchTags condition pairs= pairs |> List.filter (fun p -> doTagsMatch condition p.Tags)
 
