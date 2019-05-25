@@ -175,11 +175,20 @@ type CsvPersistence(loader: Loader, saver: Saver)=
         saveTags updated
         updated |> List.map idOf
 
+    let removeTags tagIds= 
+        let existing= loadTags()
+        let shouldBeKept (t: PersistentTag.Row) = tagIds |> List.contains t.Id |> not
+        let updated= existing |> List.filter shouldBeKept
+        updated |> saveTags
+
     let updateAssociations pairId tagIds=
         let nu= tagIds |> List.map (fun tagId -> serializePairTagAssociation pairId tagId)
-        // TODO: for removed tags, check if they are in use by anything else, if no delete them
-        let toKeep= loadAssociations() |> List.filter (fun a -> a.PairId<>pairId)
+        let old= loadAssociations()
+        let (oldForPair, toKeep) = old |> List.partition (fun a -> a.PairId=pairId)
         nu |> List.append <| toKeep |> saveAssociations
+        let deletedIds= oldForPair |> List.map (fun a -> a.TagId) |> List.except tagIds
+        let isNotInUse tagId= toKeep |> List.map (fun a -> a.TagId) |> List.contains tagId |> not
+        deletedIds |>  List.filter isNotInUse |> removeTags
 
     let getAssociatedTags pairId=
         let tagIds= loadAssociations() |> List.filter (fun a -> a.PairId=pairId) |> List.map (fun a -> a.TagId) |> Set.ofList
