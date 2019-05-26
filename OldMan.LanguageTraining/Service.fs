@@ -23,14 +23,14 @@ type Service(persistence: IPersistence)=
     member this.getLanguageNames= persistence.GetConfiguration
 
     member this.addWordPair (definition: Word*Word*Tag list)=
-        definition |> createNewWordPair |> persistence.AddPair 
+        definition |> WordPair.create |> persistence.AddPair 
 
     member this.updateWordPair id (definition: Word*Word*Tag list)=
-        {(definition |> createNewWordPair) with Id=id} |> persistence.UpdatePair
+        {(definition |> WordPair.create) with Id=id} |> persistence.UpdatePair
 
 
     member this.listWordPairsForTags condition=
-        this.listWordPairs() |> matchTags condition
+        this.listWordPairs() |> TagCondition.filter condition
 
     member this.listTags()= persistence.GetTags()
 

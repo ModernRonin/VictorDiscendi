@@ -4,29 +4,38 @@ open System
 
 // core entities
 type Word = Word of string 
-    
+module Word=
+    let unwrap (Word text)= text
 
-type Score = Score of int with
-    static member Start= Score (-3)
+type Score = Score of int 
+module Score=
+    let start= Score (-3)
 
-type Count = Count of uint32 with
-    static member Zero= Count (uint32 0)
+type Count = Count of uint32
+module Count=
+    let zero= Count (uint32 0)
+    let unwrap (Count c)= c
 
-type SmallCount= SmallCount of uint8 with
-    static member Zero= SmallCount (uint8 0)
+type SmallCount= SmallCount of uint8 
+module SmallCount=
+    let zero= SmallCount (uint8 0)
+    let unwrap (SmallCount c)= c
+    let minusOne (SmallCount c)= SmallCount (c-uint8 1)
 
-type Id = Id of int64 with
-    static member Uninitialized= Id (int64 0)
-    static member From (what: int)= Id (int64 what)
+type Id = Id of int64 
+module Id=
+    let uninitialized= Id (int64 0)
+    let from (what: int)= Id (int64 what)
 
 type Tag = 
     {
         Id: Id
         Text: string
-    } with
-    static member Create tag = 
+    }
+module Tag=
+    let create tag = 
         {
-            Id = Id.Uninitialized
+            Id = Id.uninitialized
             Text= tag
         }
 
@@ -37,6 +46,15 @@ type ScoreCard =
         LeftScore: Score
         RightScore: Score
     }
+module ScoreCard=
+    let create()=
+        {
+            LastAsked= DateTime.UtcNow
+            TimesAsked= Count.zero
+            LeftScore= Score.start
+            RightScore= Score.start
+        }
+
 
 type WordPair= 
      {
@@ -47,6 +65,18 @@ type WordPair=
         Tags: Tag list
         ScoreCard: ScoreCard
      }
+module WordPair=
+    let create definition=
+        let (left, right, tags)= definition
+        {
+            Left= left
+            Right= right
+            Tags= tags
+            Id = Id.uninitialized
+            Created= DateTime.UtcNow
+            ScoreCard= ScoreCard.create()
+        }
+
 
 type LanguageConfiguration= 
     {
@@ -72,8 +102,15 @@ type QuestionType=
 type TagCondition=
     | AndTagCondition of TagCondition*TagCondition
     | OrTagCondition of TagCondition*TagCondition
-    | TagIsContained of Tag with
-    static member From (tag: string)= tag |> Tag.Create |> TagIsContained
+    | TagIsContained of Tag 
+module TagCondition=
+    let from (tag: string)= tag |> Tag.create |> TagIsContained
+    let rec isFulfilledBy condition tags = 
+        match condition with
+        | TagIsContained t -> tags |> List.contains t
+        | AndTagCondition (left, right) -> (isFulfilledBy left tags) && (isFulfilledBy right tags)
+        | OrTagCondition (left, right) -> (isFulfilledBy left tags) || (isFulfilledBy right tags)
+    let filter condition pairs= pairs |> List.filter (fun p -> isFulfilledBy condition p.Tags)
         
 
 type QuizSettings=
@@ -115,35 +152,6 @@ type QuestionResult =
     | Correct
     | Incorrect
 
-
-
-
-// operations
-let createNewScoreCard()=
-    {
-        LastAsked= DateTime.UtcNow
-        TimesAsked= Count.Zero
-        LeftScore= Score.Start
-        RightScore= Score.Start
-    }
-
-let createNewWordPair definition=
-    let (left, right, tags)= definition
-    {
-        Left= left
-        Right= right
-        Tags= tags
-        Id = Id.Uninitialized
-        Created= DateTime.UtcNow
-        ScoreCard= createNewScoreCard()
-    }
-
-let rec doTagsMatch condition tags = 
-    match condition with
-    | TagIsContained t -> tags |> List.contains t
-    | AndTagCondition (left, right) -> (doTagsMatch left tags) && (doTagsMatch right tags)
-    | OrTagCondition (left, right) -> (doTagsMatch left tags) || (doTagsMatch right tags)
-
 type RawQuestion=
     {
         PairId: Id
@@ -176,10 +184,8 @@ let toRawQuestions pair=
     ]
     
 
-let matchTags condition pairs= pairs |> List.filter (fun p -> doTagsMatch condition p.Tags)
-
 let getCandidates settings pairs= 
-    let matchTags= matchTags settings.TagsToInclude
+    let matchTags= TagCondition.filter settings.TagsToInclude
     let matchSide raw= 
         match settings.Direction with
         | Both -> true
@@ -194,16 +200,15 @@ let getCandidates settings pairs=
 let createQuestion settings pairs=
     let candidates= getCandidates settings pairs 
     let raw = candidates |> List.minBy (fun r -> r.LastAsked)
-    let unwrap (Word text)= text
     match settings.Type with
     | FreeEntry -> FreeEntryQuestion {
-                        Prompt= unwrap raw.Question
-                        CorrectAnswer= unwrap raw.Answer
+                        Prompt= Word.unwrap raw.Question
+                        CorrectAnswer= Word.unwrap raw.Answer
                    }
     | MultipleChoice choiceSettings -> 
         MultipleChoiceQuestion {
-            Prompt= unwrap raw.Question
-            CorrectAnswer= unwrap raw.Answer
+            Prompt= Word.unwrap raw.Question
+            CorrectAnswer= Word.unwrap raw.Answer
             Choices= []//candidates |> List.except [raw] 
                        // |> List.sortBy (fun r -> r.Score) |> List.take choiceSettings.NumberOfChoices-1
                        // |> List.Cons raw |> List.map unwrap 

@@ -5,11 +5,11 @@ open FsUnitTyped
 open OldMan.LanguageTraining.Domain
 
 module doTagsMatch=
-    let underTest= OldMan.LanguageTraining.Domain.doTagsMatch
-    let toTags= List.map Tag.Create
+    let underTest= OldMan.LanguageTraining.Domain.TagCondition.isFulfilledBy
+    let toTags= List.map Tag.create
 
     module ``for a TagIsCondition``=
-        let underTest= underTest (TagCondition.From "alpha")
+        let underTest= underTest (TagCondition.from "alpha")
 
         [<Test>]
         let ``and an empty list is false``()=
@@ -26,8 +26,8 @@ module doTagsMatch=
     module ``for an AndTagCondition``=
         let underTest= underTest (AndTagCondition 
                                     (
-                                        (TagCondition.From "a"), 
-                                        (TagCondition.From "b")
+                                        (TagCondition.from "a"), 
+                                        (TagCondition.from "b")
                                     )
                                  )
 
@@ -50,8 +50,8 @@ module doTagsMatch=
     module ``for an OrTagCondition``=
         let underTest= underTest (OrTagCondition 
                                     (
-                                        (TagCondition.From "a"), 
-                                        (TagCondition.From "b")
+                                        (TagCondition.from "a"), 
+                                        (TagCondition.from "b")
                                      )
                                   )
 
