@@ -16,11 +16,12 @@ module Count=
     let zero= Count (uint32 0)
     let unwrap (Count c)= c
 
-type SmallCount= SmallCount of uint8 
-module SmallCount=
-    let zero= SmallCount (uint8 0)
-    let unwrap (SmallCount c)= c
-    let minusOne (SmallCount c)= SmallCount (c-uint8 1)
+type ChoiceCount= ChoiceCount of uint8 
+module ChoiceCount=
+    let create = function
+        | n when n > 1 -> n
+        | _ -> raise (ArgumentOutOfRangeException())
+    let minusOne (ChoiceCount c)= int c-1
 
 type Id = Id of int64 
 module Id=
@@ -92,7 +93,7 @@ type Direction=
 
 type MultipleChoiceSettings=
     {
-        NumberOfChoices: SmallCount
+        NumberOfChoices: ChoiceCount
     }
 
 type QuestionType=
@@ -137,10 +138,10 @@ type MultipleChoiceQuestion=
         Choices: string list
         CorrectAnswer: string
     }
-
 type Question=
     | FreeEntryQuestion of FreeEntryQuestion
     | MultipleChoiceQuestion of MultipleChoiceQuestion
+
 
 type WordReference= 
     {
@@ -160,58 +161,67 @@ type RawQuestion=
         SideOfAnswer: Side
         Score: Score
         LastAsked: DateTime
-
     }
-
-let toRawQuestions pair=
-    [
+module RawQuestion=
+    let toFreeEntry raw= FreeEntryQuestion 
+                            {
+                                Prompt= Word.unwrap raw.Question
+                                CorrectAnswer= Word.unwrap raw.Answer
+                            }
+    let toMultipleChoice raw alternativeAnswers= MultipleChoiceQuestion 
+                                                    {
+                                                        Prompt= Word.unwrap raw.Question
+                                                        CorrectAnswer= Word.unwrap raw.Answer
+                                                        Choices= Word.unwrap raw.Answer :: alternativeAnswers
+                                                    }
+    let ofPair pair= 
+        [
+            {
+                PairId= pair.Id
+                Question= pair.Left
+                Answer= pair.Right
+                SideOfAnswer= Right
+                Score= pair.ScoreCard.LeftScore
+                LastAsked= pair.ScoreCard.LastAsked
+            }
+            {
+                PairId= pair.Id
+                Question= pair.Right
+                Answer= pair.Left
+                SideOfAnswer= Left
+                Score= pair.ScoreCard.LeftScore
+                LastAsked= pair.ScoreCard.LastAsked
+            }
+        ]
+    let toReference raw= 
         {
-            PairId= pair.Id
-            Question= pair.Left
-            Answer= pair.Right
-            SideOfAnswer= Right
-            Score= pair.ScoreCard.LeftScore
-            LastAsked= pair.ScoreCard.LastAsked
+            PairId= raw.PairId
+            Side= raw.SideOfAnswer
         }
-        {
-            PairId= pair.Id
-            Question= pair.Right
-            Answer= pair.Left
-            SideOfAnswer= Left
-            Score= pair.ScoreCard.LeftScore
-            LastAsked= pair.ScoreCard.LastAsked
-        }
-    ]
     
 
-let getCandidates settings pairs= 
-    let matchTags= TagCondition.filter settings.TagsToInclude
-    let matchSide raw= 
-        match settings.Direction with
-        | Both -> true
-        | LeftToRight -> raw.SideOfAnswer=Right
-        | RightToLeft -> raw.SideOfAnswer=Left
-    let matchScore raw= raw.Score<=settings.MaximumScore
+module Question=
+    let private getCandidates settings pairs= 
+        let matchTags= TagCondition.filter settings.TagsToInclude
+        let matchSide raw= 
+            match settings.Direction with
+            | Both -> true
+            | LeftToRight -> raw.SideOfAnswer=Right
+            | RightToLeft -> raw.SideOfAnswer=Left
+        let matchScore raw= raw.Score<=settings.MaximumScore
 
-    pairs |> matchTags |> List.collect toRawQuestions 
-          |> List.filter matchSide |> List.filter matchScore
+        pairs |> matchTags |> List.collect RawQuestion.ofPair 
+              |> List.filter matchSide |> List.filter matchScore
 
-
-let createQuestion settings pairs=
-    let candidates= getCandidates settings pairs 
-    let raw = candidates |> List.minBy (fun r -> r.LastAsked)
-    match settings.Type with
-    | FreeEntry -> FreeEntryQuestion {
-                        Prompt= Word.unwrap raw.Question
-                        CorrectAnswer= Word.unwrap raw.Answer
-                   }
-    | MultipleChoice choiceSettings -> 
-        MultipleChoiceQuestion {
-            Prompt= Word.unwrap raw.Question
-            CorrectAnswer= Word.unwrap raw.Answer
-            Choices= []//candidates |> List.except [raw] 
-                       // |> List.sortBy (fun r -> r.Score) |> List.take choiceSettings.NumberOfChoices-1
-                       // |> List.Cons raw |> List.map unwrap 
-        }
+    let create pairs settings=
+        let candidates= getCandidates settings pairs 
+        let raw = candidates |> List.minBy (fun r -> r.LastAsked)
+        let question= match settings.Type with
+                        | FreeEntry -> RawQuestion.toFreeEntry raw
+                        | MultipleChoice choiceSettings -> 
+                                candidates |> List.except [raw] 
+                                |> List.sortBy (fun r -> r.Score) |> List.take (ChoiceCount.minusOne choiceSettings.NumberOfChoices)
+                                |> List.map (fun r -> Word.unwrap r.Answer) |> RawQuestion.toMultipleChoice raw 
+        RawQuestion.toReference raw, question 
 
     

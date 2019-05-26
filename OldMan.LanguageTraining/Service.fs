@@ -34,7 +34,7 @@ type Service(persistence: IPersistence)=
 
     member this.listTags()= persistence.GetTags()
 
-    //member this.generateQuestion= createQuestion
+    member this.generateQuestion= Question.create <| this.listWordPairs()
 
     //member this.scoreQuestionResult= scoreQuestion
         
