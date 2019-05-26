@@ -96,6 +96,7 @@ type FreeEntryQuestion=
 
 type MultipleChoiceQuestion=
     {
+        Prompt: string
         Choices: string list
         CorrectAnswer: string
     }
@@ -154,16 +155,6 @@ type RawQuestion=
 
     }
 
-let createMultipleChoiceQuestion raw settings pairs= 
-    
-
-let createFreeEntryQuestion raw = 
-    let unwrap (Word text)= text
-    {
-        Prompt= unwrap raw.Question
-        CorrectAnswer= unwrap raw.Answer
-    }
-    
 let toRawQuestions pair=
     [
         {
@@ -199,14 +190,23 @@ let getCandidates settings pairs=
     pairs |> matchTags |> List.collect toRawQuestions 
           |> List.filter matchSide |> List.filter matchScore
 
-let toQuestion settings pairs raw=
-    match settings.Type with
-    | FreeEntry -> createFreeEntryQuestion raw
-    | MultipleChoice choiceSettings -> createMultipleChoiceQuestion raw choiceSettings pairs
 
 let createQuestion settings pairs=
-    let raw = getCandidates settings pairs |> List.minBy (fun r -> r.LastAsked)
-    let question= raw |> toQuestion settings pairs
-
+    let candidates= getCandidates settings pairs 
+    let raw = candidates |> List.minBy (fun r -> r.LastAsked)
+    let unwrap (Word text)= text
+    match settings.Type with
+    | FreeEntry -> FreeEntryQuestion {
+                        Prompt= unwrap raw.Question
+                        CorrectAnswer= unwrap raw.Answer
+                   }
+    | MultipleChoice choiceSettings -> 
+        MultipleChoiceQuestion {
+            Prompt= unwrap raw.Question
+            CorrectAnswer= unwrap raw.Answer
+            Choices= []//candidates |> List.except [raw] 
+                       // |> List.sortBy (fun r -> r.Score) |> List.take choiceSettings.NumberOfChoices-1
+                       // |> List.Cons raw |> List.map unwrap 
+        }
 
     
