@@ -36,8 +36,11 @@ type Service(persistence: IPersistence)=
 
     member this.generateQuestion= Question.create <| this.listWordPairs()
 
-    member this.scoreQuestionResult result=
-        result |> Scoring.score |> List.iter persistence.UpdatePair
+    member this.scoreQuestionResult (result: WordReference*Question*QuestionResult)=
+        let allPairs= this.listWordPairs()
+        let findPair id= allPairs |> List.find (fun p -> p.Id=id)
+        let changed= result |> Scoring.score findPair
+        changed |> List.iter persistence.UpdatePair
         
         
 

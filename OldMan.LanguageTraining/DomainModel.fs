@@ -10,6 +10,10 @@ module Word=
 type Score = Score of int 
 module Score=
     let start= Score (-3)
+    let unwrap (Score s)= s
+    let add lhs rhs=
+        (rhs + unwrap lhs) |> Score
+
 
 type Count = Count of uint32
 module Count=
@@ -225,4 +229,17 @@ type QuestionResult =
     | Incorrect
 
 module Scoring= 
-    let score (result: WordReference*Question*QuestionResult) : WordPair list= []
+    let scorePair pair side delta=
+        match side with
+        | Left -> { pair with ScoreCard= {pair.ScoreCard with LeftScore=Score.add pair.ScoreCard.LeftScore delta} }
+        | Right -> { pair with ScoreCard= {pair.ScoreCard with RightScore=Score.add pair.ScoreCard.RightScore delta} }
+
+    let score (pairFinder: Id->WordPair) (result: WordReference*Question*QuestionResult) : WordPair list= 
+        let (reference, question, questionResult)= result
+        let pair= pairFinder reference.PairId
+        let scorePair= scorePair pair reference.Side
+        match (question, questionResult) with
+            | (FreeEntryQuestion _, Incorrect) -> -1 |> scorePair |> List.singleton
+            | (FreeEntryQuestion _, Correct) -> 1 |> scorePair  |> List.singleton
+            | (MultipleChoiceQuestion choices, Correct) -> choices.Choices.Length |> scorePair |> List.singleton
+            | (MultipleChoiceQuestion choices, Incorrect) -> -choices.Choices.Length |> scorePair |> List.singleton
