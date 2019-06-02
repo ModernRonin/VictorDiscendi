@@ -149,10 +149,6 @@ type WordReference=
         Side: Side
     }
     
-type QuestionResult =
-    | Correct
-    | Incorrect
-
 type RawQuestion=
     {
         PairId: Id
@@ -224,4 +220,9 @@ module Question=
                                 |> List.map (fun r -> Word.unwrap r.Answer) |> RawQuestion.toMultipleChoice raw 
         RawQuestion.toReference raw, question 
 
-    
+type QuestionResult =
+    | Correct
+    | Incorrect
+
+module Scoring= 
+    let score (result: WordReference*Question*QuestionResult) : WordPair list= []

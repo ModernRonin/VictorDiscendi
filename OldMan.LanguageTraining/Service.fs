@@ -22,10 +22,10 @@ type Service(persistence: IPersistence)=
     member this.updateLanguageNames= persistence.UpdateConfiguration
     member this.getLanguageNames= persistence.GetConfiguration
 
-    member this.addWordPair (definition: Word*Word*Tag list)=
+    member this.addWordPair definition=
         definition |> WordPair.create |> persistence.AddPair 
 
-    member this.updateWordPair id (definition: Word*Word*Tag list)=
+    member this.updateWordPair id definition=
         {(definition |> WordPair.create) with Id=id} |> persistence.UpdatePair
 
 
@@ -36,7 +36,8 @@ type Service(persistence: IPersistence)=
 
     member this.generateQuestion= Question.create <| this.listWordPairs()
 
-    //member this.scoreQuestionResult= scoreQuestion
+    member this.scoreQuestionResult result=
+        result |> Scoring.score |> List.iter persistence.UpdatePair
         
         
 
