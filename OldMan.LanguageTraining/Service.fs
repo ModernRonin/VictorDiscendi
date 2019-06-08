@@ -5,43 +5,39 @@ open OldMan.LanguageTraining.Persistence
 
 
 type IService=
-    abstract member addWordPair: Word*Word*Tag list -> WordPair
-    abstract member updateWordPair: int64 -> Word*Word*Tag list -> unit
-    abstract member listWordPairs: unit -> WordPair list
-    abstract member listWordPairsForTags: TagCondition -> WordPair list
-    abstract member listTags: unit -> Tag list
-    abstract member updateLanguageNames: LanguageConfiguration -> unit
-    abstract member getLanguageNames: unit -> LanguageConfiguration
-    abstract member generateQuestion: QuizSettings -> WordReference*Question
-    abstract member scoreQuestionResult: WordReference*Question*QuestionResult -> unit
-
+    abstract member listWordPairs: (unit) -> WordPair list
+    abstract member addWordPair: (Word*Word*Tag list) -> WordPair
+    abstract member updateWordPair: Id * (Word*Word*Tag list) -> unit
+    abstract member listWordPairsForTags: (TagCondition) -> WordPair list
+    abstract member listTags: (unit) -> Tag list
+    abstract member updateLanguageNames: (LanguageConfiguration) -> unit
+    abstract member getLanguageNames: (unit) -> LanguageConfiguration
+    abstract member generateQuestion: (QuizSettings) -> WordReference*Question
+    abstract member scoreQuestionResult: (WordReference*Question*QuestionResult) -> unit
 
 type Service(persistence: IPersistence)=
-    //interface IService with
-    member this.listWordPairs=  persistence.GetPairs
-    member this.updateLanguageNames= persistence.UpdateConfiguration
-    member this.getLanguageNames= persistence.GetConfiguration
+    interface IService with
+        member this.updateLanguageNames(configuration)= persistence.UpdateConfiguration(configuration)
+        member this.getLanguageNames()= persistence.GetConfiguration()
+        member this.listWordPairs()=  persistence.GetPairs()
+        member this.listWordPairsForTags condition= 
+            persistence.GetPairs() |> TagCondition.filter condition
+        member this.addWordPair(definition)=
+            definition |> WordPair.create |> persistence.AddPair 
+        member this.updateWordPair (id,definition)=
+            {(definition |> WordPair.create) with Id=id} |> persistence.UpdatePair
+        member this.listTags()= persistence.GetTags()
 
-    member this.addWordPair definition=
-        definition |> WordPair.create |> persistence.AddPair 
+        member this.generateQuestion(settings)= persistence.GetPairs() |> Question.create <| settings
 
-    member this.updateWordPair id definition=
-        {(definition |> WordPair.create) with Id=id} |> persistence.UpdatePair
-
-
-    member this.listWordPairsForTags condition=
-        this.listWordPairs() |> TagCondition.filter condition
-
-    member this.listTags()= persistence.GetTags()
-
-    member this.generateQuestion= Question.create <| this.listWordPairs()
-
-    member this.scoreQuestionResult (result: WordReference*Question*QuestionResult)=
-        let allPairs= this.listWordPairs()
-        let findPair id= allPairs |> List.find (fun p -> p.Id=id)
-        let changed= result |> Scoring.score findPair
-        changed |> List.iter persistence.UpdatePair
+        member this.scoreQuestionResult (result: WordReference*Question*QuestionResult)=
+            let allPairs= persistence.GetPairs()
+            let findPair id= allPairs |> List.find (fun p -> p.Id=id)
+            let changed= result |> Scoring.score findPair
+            changed |> List.iter persistence.UpdatePair
         
+
+
         
 
 
