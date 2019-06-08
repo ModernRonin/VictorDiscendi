@@ -24,28 +24,26 @@ let createWithEmptyBackStore()=
     let backStore= new BackStore()
     (new CsvPersistence(backStore.Load, backStore.Save)) :> IPersistence
 
-// necessary because the CSV type provider does not deal correctly with "\n" in field values
-//let isValidString (s:string) = null<>s && not (s.Contains("\n")) && not (s.Contains("\r"))
+let stringGenerator= 
+    Arb.Default.Char().Generator |> 
+    Gen.filter (fun c -> Char.IsLetterOrDigit(c) || Char.IsPunctuation(c)) |> 
+    Gen.nonEmptyListOf |> Gen.map Array.ofList |> Gen.map (fun c -> new string(c))
 
-let charSet= "abc"
-let isValidString (s:string) = null<>s && not (s |> Seq.exists (fun c -> not (charSet |> Seq.contains c)))
 let createConfig left right = {LeftLanguageName= left; RightLanguageName= right}
-let generateString= Arb.generate<string> |> Gen.filter isValidString
-let generateConfig= createConfig <!> generateString <*> generateString 
 
 type Generators =
-  static member String() =
+  static member String()=
     { 
         new Arbitrary<string>() with
-            override x.Generator = generateString
+            override x.Generator = stringGenerator
     }
   static member LanguageConfiguration()= 
     {
         new Arbitrary<LanguageConfiguration>() with
-           override x.Generator = generateConfig
+           override x.Generator = createConfig <!> stringGenerator <*> stringGenerator
     }
 
-Arb.register<Generators>() |> ignore
+
 
 (* 
 when I update config and read it, the result should be what I put in
@@ -54,6 +52,7 @@ when I add pairs X and Y, then update X for Z, then do GetPairs, I should get Y 
 *)
 
 module Configuration=
+    
     let ``read returns values from last update`` config=
         let persistence= createWithEmptyBackStore()
         persistence.UpdateConfiguration(config) 
@@ -61,9 +60,9 @@ module Configuration=
 
     let ``config does not contain null values`` config = config.LeftLanguageName<>null && config.RightLanguageName<>null
 
-    //[<Property>]
+    [<Property(Arbitrary= [| typeof<Generators> |])>]
     let ``read after update gets the values sent with update`` (config: LanguageConfiguration)=
-        ``config does not contain null values`` config ==> ``read returns values from last update`` config
+        ``read returns values from last update`` config
         
         
         
