@@ -109,8 +109,12 @@ let inline private idOf (x: ^R)=
         
         
 let inline private nextIdIn (rows: ^record seq)= 
-    Id (1L + (rows |> Seq.map idOf |> Seq.max))
-        
+    let frozen= rows |> Seq.map idOf |> Array.ofSeq
+
+    Id (1L + match frozen with
+             | [||] -> 0L
+             | _ -> frozen |> Seq.max)
+       
     
 
 
