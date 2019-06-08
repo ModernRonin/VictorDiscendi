@@ -33,11 +33,15 @@ module Setup=
                 new Arbitrary<string>() with 
                     override x.Generator= stringGenerator
             }
+        static member Id()=
+            {
+                new Arbitrary<Id>() with 
+                    override x.Generator= Gen.constant Id.uninitialized
+            }
 
 
 (* 
 
-when I add n pairs and then do GetPairs, the result should be what I added
 when I add pairs X and Y, then update X for Z, then do GetPairs, I should get Y and Z
 *)
 
@@ -60,7 +64,15 @@ module IPersistence=
         let persistence= createWithEmptyBackStore()
         let expected= pairs |> List.map persistence.AddPair
         persistence.GetPairs() = expected
-        
+
+    [<Property>]
+    let ``AddPair() returns a pair with Id set``
+        (pair: WordPair)=
+        let persistence= createWithEmptyBackStore()
+        let result= persistence.AddPair pair
+        result.Id <> pair.Id
+
+
         
         
 
