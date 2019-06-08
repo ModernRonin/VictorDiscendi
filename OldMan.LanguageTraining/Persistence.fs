@@ -133,14 +133,20 @@ type Loader= DataKind -> string
 type Saver= DataKind -> string -> unit
 
 type CsvPersistence(loader: Loader, saver: Saver)=
-    let loadWords()= Words |> loader |> PersistentPair.ParseRows |> List.ofArray
-    let loadTags()= Tagging |> loader |> PersistentTag.ParseRows |> List.ofArray
-    let loadAssociations()= WordTagAssociation |> loader |> PersistentTagPairAssociation.ParseRows |> List.ofArray
+    let safeParse parse str= 
+        match str with
+        | null 
+        | "" -> Array.empty
+        | _ -> parse str
+
+    let loadWords()= Words |> loader |> safeParse PersistentPair.ParseRows |> List.ofArray
+    let loadTags()= Tagging |> loader |> safeParse PersistentTag.ParseRows |> List.ofArray
+    let loadAssociations()= WordTagAssociation |> loader |> safeParse PersistentTagPairAssociation.ParseRows |> List.ofArray
     let saveWords w= ((new PersistentPair(w)).SaveToString()) |> saver Words 
     let saveTags t= ((new PersistentTag(t)).SaveToString()) |> saver Tagging
     let saveAssociations a= ((new PersistentTagPairAssociation(a)).SaveToString()) |> saver WordTagAssociation
     let loadConfig()= 
-        match Configuration |> loader |> PersistentConfiguration.ParseRows |> List.ofArray with
+        match Configuration |> loader |> safeParse PersistentConfiguration.ParseRows |> List.ofArray with
         | [] -> PersistentConfiguration.Row("", "")
         | head::_ -> head
 
