@@ -29,19 +29,14 @@ let stringGenerator=
     Gen.filter (fun c -> Char.IsLetterOrDigit(c) || Char.IsPunctuation(c)) |> 
     Gen.nonEmptyListOf |> Gen.map Array.ofList |> Gen.map (fun c -> new string(c))
 
-let createConfig left right = {LeftLanguageName= left; RightLanguageName= right}
-
-type Generators =
-  static member String()=
-    { 
-        new Arbitrary<string>() with
-            override x.Generator = stringGenerator
-    }
-  static member LanguageConfiguration()= 
-    {
-        new Arbitrary<LanguageConfiguration>() with
-           override x.Generator = createConfig <!> stringGenerator <*> stringGenerator
-    }
+type Generators=
+    static member LanguageConfiguration()= 
+        {
+            new Arbitrary<LanguageConfiguration>() with
+                override x.Generator = 
+                    let createConfig left right = {LeftLanguageName= left; RightLanguageName= right}
+                    createConfig <!> stringGenerator <*> stringGenerator
+        }
 
 
 
@@ -52,17 +47,11 @@ when I add pairs X and Y, then update X for Z, then do GetPairs, I should get Y 
 *)
 
 module Configuration=
-    
-    let ``read returns values from last update`` config=
+    [<Property(Arbitrary= [| typeof<Generators> |])>]
+    let ``read after update gets the values sent with update`` (config: LanguageConfiguration)=
         let persistence= createWithEmptyBackStore()
         persistence.UpdateConfiguration(config) 
         persistence.GetConfiguration() = config
-
-    let ``config does not contain null values`` config = config.LeftLanguageName<>null && config.RightLanguageName<>null
-
-    [<Property(Arbitrary= [| typeof<Generators> |])>]
-    let ``read after update gets the values sent with update`` (config: LanguageConfiguration)=
-        ``read returns values from last update`` config
         
         
         
