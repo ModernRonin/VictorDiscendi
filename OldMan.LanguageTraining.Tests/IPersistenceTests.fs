@@ -14,7 +14,7 @@ module Setup=
 
 
     type BackStore()= 
-        let mutable data: Map<DataKind, string>= Map.empty
+        let mutable data: Map<DataKind, string>= Map.empty.Add(DataKind.Configuration,"").Add(DataKind.Tagging, "").Add(DataKind.Words, "").Add(DataKind.WordTagAssociation, "")
         member this.Load kind= data |> Map.find kind
         member this.Save kind what= data <- data.Add (kind, what)
 
@@ -28,14 +28,11 @@ module Setup=
         Gen.nonEmptyListOf |> Gen.map Array.ofList |> Gen.map (fun c -> new string(c))
 
     type Generators=
-        static member LanguageConfiguration()= 
+        static member String()= 
             {
-                new Arbitrary<LanguageConfiguration>() with
-                    override x.Generator = 
-                        let createConfig left right = {LeftLanguageName= left; RightLanguageName= right}
-                        createConfig <!> stringGenerator <*> stringGenerator
+                new Arbitrary<string>() with 
+                    override x.Generator= stringGenerator
             }
-
 
 
 (* 
@@ -51,10 +48,18 @@ open Setup
 [<Properties(Arbitrary= [| typeof<Generators> |])>]
 module IPersistence=
     [<Property>]
-    let ``getting the configuration after updating it returns what it was updated to`` (config: LanguageConfiguration)=
+    let ``getting the configuration after updating it returns what it was updated to`` 
+        (config: LanguageConfiguration)=
         let persistence= createWithEmptyBackStore()
         persistence.UpdateConfiguration(config) 
         persistence.GetConfiguration() = config
+
+    [<Property>]
+    let ``GetPairs() returns the combined return values of all prior calls to AddPair``
+        (pairs: WordPair list)=
+        let persistence= createWithEmptyBackStore()
+        let expected= pairs |> List.map persistence.AddPair
+        persistence.GetPairs() = expected
         
         
         
