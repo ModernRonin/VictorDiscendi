@@ -11,7 +11,7 @@ open OldMan.LanguageTraining.Persistence
 open OldMan.LanguageTraining.Domain
 
 open FsCheck
-open FsCheck.NUnit
+open FsCheck.Xunit
 
 
 
@@ -45,9 +45,8 @@ when I update config and read it, the result should be what I put in
 when I add n pairs and then do GetPairs, the result should be what I added
 when I add pairs X and Y, then update X for Z, then do GetPairs, I should get Y and Z
 *)
-
+[<Properties(Arbitrary= [| typeof<Generators> |])>]
 module Configuration=
-    [<Property(Arbitrary= [| typeof<Generators> |])>]
     let ``read after update gets the values sent with update`` (config: LanguageConfiguration)=
         let persistence= createWithEmptyBackStore()
         persistence.UpdateConfiguration(config) 
