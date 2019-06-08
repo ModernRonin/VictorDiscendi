@@ -22,3 +22,5 @@ Victor on its own wouldn't work. But remembering that he was my Latin teacher an
 which mean "Winner of Learning". I admit it's not the most creative of names, but it sounds nice and it has Victor's name in it and that's all I really want :-)
 
 
+# License
+Use of the source code in this repository is governed by the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International Public License](License.txt).
