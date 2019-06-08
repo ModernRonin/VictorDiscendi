@@ -1,10 +1,10 @@
-﻿module OldMan.LanguageTraining.Tests.DomainLogic
+﻿module OldMan.LanguageTraining.Tests.DomainLogic.TagCondition
 
 open NUnit.Framework
 open FsUnitTyped
 open OldMan.LanguageTraining.Domain
 
-module doTagsMatch=
+module isFulfilledBy=
     let underTest= OldMan.LanguageTraining.Domain.TagCondition.isFulfilledBy
     let toTags= List.map Tag.create
 

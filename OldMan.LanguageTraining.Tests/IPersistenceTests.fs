@@ -4,39 +4,37 @@
     to parameterize an FsCheck test suite on the underTest type
 *)
 
-module OldMan.LanguageTraining.Tests.Persistence.IPersistence
+namespace OldMan.LanguageTraining.Tests.Persistence
+module Setup=
+    open System
+    open OldMan.LanguageTraining.Persistence
+    open OldMan.LanguageTraining.Domain
 
-open System
-open OldMan.LanguageTraining.Persistence
-open OldMan.LanguageTraining.Domain
-
-open FsCheck
-open FsCheck.Xunit
-
+    open FsCheck
 
 
-type BackStore()= 
-    let mutable data: Map<DataKind, string>= Map.empty
-    member this.Load kind= data |> Map.find kind
-    member this.Save kind what= data <- data.Add (kind, what)
+    type BackStore()= 
+        let mutable data: Map<DataKind, string>= Map.empty
+        member this.Load kind= data |> Map.find kind
+        member this.Save kind what= data <- data.Add (kind, what)
 
-let createWithEmptyBackStore()= 
-    let backStore= new BackStore()
-    (new CsvPersistence(backStore.Load, backStore.Save)) :> IPersistence
+    let createWithEmptyBackStore()= 
+        let backStore= new BackStore()
+        (new CsvPersistence(backStore.Load, backStore.Save)) :> IPersistence
 
-let stringGenerator= 
-    Arb.Default.Char().Generator |> 
-    Gen.filter (fun c -> Char.IsLetterOrDigit(c) || Char.IsPunctuation(c)) |> 
-    Gen.nonEmptyListOf |> Gen.map Array.ofList |> Gen.map (fun c -> new string(c))
+    let stringGenerator= 
+        Arb.Default.Char().Generator |> 
+        Gen.filter (fun c -> Char.IsLetterOrDigit(c) || Char.IsPunctuation(c)) |> 
+        Gen.nonEmptyListOf |> Gen.map Array.ofList |> Gen.map (fun c -> new string(c))
 
-type Generators=
-    static member LanguageConfiguration()= 
-        {
-            new Arbitrary<LanguageConfiguration>() with
-                override x.Generator = 
-                    let createConfig left right = {LeftLanguageName= left; RightLanguageName= right}
-                    createConfig <!> stringGenerator <*> stringGenerator
-        }
+    type Generators=
+        static member LanguageConfiguration()= 
+            {
+                new Arbitrary<LanguageConfiguration>() with
+                    override x.Generator = 
+                        let createConfig left right = {LeftLanguageName= left; RightLanguageName= right}
+                        createConfig <!> stringGenerator <*> stringGenerator
+            }
 
 
 
@@ -45,10 +43,15 @@ type Generators=
 when I add n pairs and then do GetPairs, the result should be what I added
 when I add pairs X and Y, then update X for Z, then do GetPairs, I should get Y and Z
 *)
+
+open FsCheck.Xunit
+open OldMan.LanguageTraining.Domain
+open Setup
+
 [<Properties(Arbitrary= [| typeof<Generators> |])>]
-module Configuration=
+module IPersistence=
     [<Property>]
-    let ``getting it after updating it returns what it was updated to`` (config: LanguageConfiguration)=
+    let ``getting the configuration after updating it returns what it was updated to`` (config: LanguageConfiguration)=
         let persistence= createWithEmptyBackStore()
         persistence.UpdateConfiguration(config) 
         persistence.GetConfiguration() = config
