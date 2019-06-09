@@ -1,7 +1,7 @@
 ﻿(*
     These tests should be true for any type implementing IPersistence.
-    If at some point we get another implementation, find out how
-    to parameterize an FsCheck test suite on the underTest type
+    If at some point we get another implementation, we will need to figure 
+    out a way to parameterize this test suite to the implementation type.
 *)
 
 namespace OldMan.LanguageTraining.Tests.Persistence
@@ -39,11 +39,7 @@ module Setup=
             }
 
 
-(* 
-
-when I add pairs X and Y, then update X for Z, then do GetPairs, I should get Y and Z
-*)
-
+open System
 open FsCheck;
 open FsCheck.Xunit
 open FsUnitTyped
@@ -62,33 +58,37 @@ module IPersistence=
         persistence.UpdateConfiguration(config) 
         persistence.GetConfiguration() = config
 
+    [<Test>]
+    let ``getting the configuration from an empty backstore returns two empty language names``()=
+        let persistence= createWithEmptyBackStore()
+        persistence.GetConfiguration() |> shouldEqual {LeftLanguageName=""; RightLanguageName=""}
+
     [<FsProperty>]
-    let ``GetPairs() returns the combined return values of all prior calls to AddPair``
+    let ``getting pairs returns the combined return values of all added pairs``
         (pairs: WordPair list)=
         let persistence= createWithEmptyBackStore()
         let expected= pairs |> List.map persistence.AddPair
         persistence.GetPairs() = expected
 
     [<FsProperty>]
-    let ``AddPair() returns a pair with Id set``
+    let ``adding a pair returns the pair with Id set``
         (pair: WordPair)=
         let persistence= createWithEmptyBackStore()
         let result= persistence.AddPair pair
         result.Id <> pair.Id
 
     [<FsProperty>]
-    let ``all pairs added with AddPair() have different Ids``
+    let ``all added pairs have different Ids``
         (pairs: WordPair list)=
         let persistence= createWithEmptyBackStore()
         let ids= pairs |> List.map persistence.AddPair |> List.map (fun p -> p.Id)
         ids |> List.groupBy id |> List.forall (fun (_, l) -> l.Length=1)
 
     [<Test>]
-    let ``AddPair() X and Y followed by UpdatePair X to Z followed by GetPairs() returns Z and Y``()=
+    let ``adding the pairs X and Y followed by updating X to Z followed by gettting all pairs returns Z and Y``()=
         let persistence= createWithEmptyBackStore()
-        let generator= Arb.generate<WordPair>
-        let x= Gen.sample 1 1 generator |> List.head
-        let y= Gen.sample 1 1 generator |> List.head
+        let x= {Id = Id.uninitialized; Left= Word "xl"; Right=Word "xr"; Created= DateTime.UtcNow; Tags=[]; ScoreCard= ScoreCard.create()}
+        let y= {Id = Id.uninitialized; Left= Word "yl"; Right=Word "yr"; Created= DateTime.UtcNow; Tags=[]; ScoreCard= ScoreCard.create()}
         let addedX= persistence.AddPair x
         let addedY= persistence.AddPair y
         let z= {addedX with Left=Word "alpha"; Right=Word "bravo"}
