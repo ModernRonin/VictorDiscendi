@@ -39,8 +39,6 @@ module Setup=
             }
 
 
-open System
-open FsCheck;
 open FsCheck.Xunit
 open FsUnitTyped
 open NUnit.Framework
@@ -122,7 +120,7 @@ module IPersistence=
         (Word "yl", Word "yr", [alpha]) |> WordPair.create |> persistence.AddPair |> ignore
         match persistence.GetTags() with
         |[] -> Assert.Fail() 
-        |head::[] -> head |> shouldEqual {Id=Id.create 1; Text="alpha"}
+        |head::[] -> head |> shouldEqual {Id=Id.wrap 1L; Text="alpha"}
         |_ -> Assert.Fail()
 
     [<Test>]
@@ -169,12 +167,12 @@ module IPersistence=
     let ``AddOrUpdateTag() adds it if it doe not yet exist``()=
         let persistence= createWithEmptyBackStore()
         persistence.AddOrUpdateTag (Tag.create "alpha")
-        persistence.GetTags() |> shouldContain {Id=Id.create 1; Text="alpha"}
+        persistence.GetTags() |> shouldContain {Id=Id.wrap 1L; Text="alpha"}
       
     [<Test>]
     let ``AddOrUpdateTag() updates if the tag already exists``()=
         let persistence= createWithEmptyBackStore()
         persistence.AddOrUpdateTag (Tag.create "alpha")
-        persistence.AddOrUpdateTag {Id= Id.create 1; Text="bravo"}
-        persistence.GetTags() |> shouldContain {Id= Id.create 1; Text="bravo"}
+        persistence.AddOrUpdateTag {Id= Id.wrap 1L; Text="bravo"}
+        persistence.GetTags() |> shouldContain {Id= Id.wrap 1L; Text="bravo"}
 

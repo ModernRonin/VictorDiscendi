@@ -18,6 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="IdTests.fs" />
     <Compile Include="DomainLogicTests.fs" />
     <Compile Include="CsvPersistenceTests.fs" />
     <Compile Include="IPersistenceTests.fs" />

@@ -55,11 +55,11 @@ module CsvPersistence=
                                         Created= DateTime(2010, 3, 7, 22, 10, 5)
                                         Tags= [
                                                 {
-                                                    Id= Id.create 19
+                                                    Id= Id.wrap 19L
                                                     Text="Obst"
                                                 }; 
                                                 {
-                                                    Id= Id.create 29
+                                                    Id= Id.wrap 29L
                                                     Text= "Substantiva"
                                                 }
                                                 ] 
@@ -77,11 +77,11 @@ module CsvPersistence=
                                         Created= DateTime(2010, 3, 7, 22, 11, 7)
                                         Tags= [
                                                 {
-                                                    Id= Id.create 23
+                                                    Id= Id.wrap 23L
                                                     Text="Transport"
                                                 }; 
                                                 {
-                                                    Id= Id.create 29
+                                                    Id= Id.wrap 29L
                                                     Text= "Substantiva"
                                                 }
                                                 ] 

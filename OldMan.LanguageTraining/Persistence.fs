@@ -144,7 +144,7 @@ type CsvPersistence(loader: Loader, saver: Saver)=
 
     let createPair (pair: WordPair)= 
         let existing= loadWords()
-        let nextId=  Id.nextIdIn existing
+        let nextId=  Id.nextAfter existing
         let result= {pair with Id=nextId}.Serialize()
         let updated= result |> List.singleton |> List.append existing
         saveWords updated
@@ -159,7 +159,7 @@ type CsvPersistence(loader: Loader, saver: Saver)=
         let existing= loadTags() 
         let doesNotExistYet (t:Tag) = existing |> List.exists (fun e -> e.Id=t.Id.Serialize()) |> not
         let (newTags, keptTags)= tags |> List.partition doesNotExistYet
-        let nextId= Id.nextIdIn existing
+        let nextId= Id.nextAfter existing
         let assignNextId (index, tag): Tag = {tag with Id=nextId.AddDelta index}
         let newTagsWithIds= newTags |> List.indexed |> List.map assignNextId
         let removed= keptTags |> List.map (fun t -> t.Serialize()) |> List.except <| existing
@@ -211,7 +211,7 @@ type CsvPersistence(loader: Loader, saver: Saver)=
         member this.AddOrUpdateTag newTag = 
             let add()=
                 let existing= loadTags() 
-                let id= Id.nextIdIn existing
+                let id= Id.nextAfter existing
                 {newTag with Id= id}.Serialize() :: existing |> saveTags
             let update()= 
                 let serialized= newTag.Serialize()
