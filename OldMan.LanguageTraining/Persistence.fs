@@ -111,7 +111,7 @@ type IPersistence=
     abstract member UpdatePair: WordPair -> unit
     abstract member GetPairs: unit -> WordPair list
     abstract member GetTags: unit -> Tag list
-    abstract member UpdateTag: Tag -> unit
+    abstract member AddOrUpdateTag: Tag -> unit
 
 type DataKind=
     | Configuration
@@ -158,13 +158,14 @@ type CsvPersistence(loader: Loader, saver: Saver)=
     let getTagIds (tags: Tag list)=
         let existing= loadTags() 
         let doesNotExistYet (t:Tag) = existing |> List.exists (fun e -> e.Id=t.Id.Serialize()) |> not
-        let newTags= tags |> List.filter doesNotExistYet
+        let (newTags, keptTags)= tags |> List.partition doesNotExistYet
         let nextId= Id.nextIdIn existing
         let assignNextId (index, tag): Tag = {tag with Id=nextId.AddDelta index}
         let newTagsWithIds= newTags |> List.indexed |> List.map assignNextId
+        let removed= keptTags |> List.map (fun t -> t.Serialize()) |> List.except <| existing
         let updated= newTagsWithIds |> List.map (fun t -> t.Serialize()) |> List.append existing
         saveTags updated
-        updated |> List.map Id.fromRaw |> List.map Id.unwrap
+        updated  |> List.except removed |> List.map Id.fromRaw |> List.map Id.unwrap 
 
     let removeTags tagIds= 
         let existing= loadTags()
@@ -207,10 +208,16 @@ type CsvPersistence(loader: Loader, saver: Saver)=
 
         member this.GetTags() = loadTags() |> List.map Tag.Deserialize |> List.distinct
         
-        member this.UpdateTag newTag = 
-            let serialized= newTag.Serialize()
-            let others= loadTags() |> List.filter (fun t -> t.Id<>serialized.Id)
-            let updated= serialized :: others
-            updated |> saveTags
+        member this.AddOrUpdateTag newTag = 
+            let add()=
+                let existing= loadTags() 
+                let id= Id.nextIdIn existing
+                {newTag with Id= id}.Serialize() :: existing |> saveTags
+            let update()= 
+                let serialized= newTag.Serialize()
+                let others= loadTags() |> List.filter (fun t -> t.Id<>serialized.Id)
+                serialized :: others |> saveTags
+            
+            if newTag.Id=Id.uninitialized then add() else update()
 
         

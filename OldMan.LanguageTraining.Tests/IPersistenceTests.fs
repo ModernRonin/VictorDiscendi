@@ -125,7 +125,27 @@ module IPersistence=
         |head::[] -> head |> shouldEqual {Id=Id.create 1; Text="alpha"}
         |_ -> Assert.Fail()
 
-
+    [<Test>]
+    let ``removing a tag from a wordpair does not remove it from others``()=
+        let persistence= createWithEmptyBackStore()
+        let x= (Word "xl", Word "xr", [Tag.create "alpha"]) |> WordPair.create |> persistence.AddPair
+        let alpha= persistence.GetTags() |> List.head
+        (Word "yl", Word "yr", [alpha]) |> WordPair.create |> persistence.AddPair |> ignore
+        persistence.UpdatePair {x with Tags=[]}
+        let other= persistence.GetPairs() |> List.filter (fun p -> p.Left=Word "yl") |> List.head
+        other.Tags |> shouldContain alpha
+        persistence.GetTags() |> shouldHaveLength 1
+        
+    [<Test>]
+    let ``removing a tag from the last word-pair removes it from the general list``()=
+        let persistence= createWithEmptyBackStore()
+        let x= (Word "xl", Word "xr", [Tag.create "alpha"]) |> WordPair.create |> persistence.AddPair
+        let alpha= persistence.GetTags() |> List.head
+        let y= (Word "yl", Word "yr", [alpha]) |> WordPair.create |> persistence.AddPair 
+        persistence.UpdatePair {x with Tags=[]}
+        persistence.UpdatePair {y with Tags=[]}
+        persistence.GetTags() |> shouldBeEmpty
+        
     [<Test>]
     let ``getTags returns all distinct tags in all added pairs``()=
         let persistence= createWithEmptyBackStore()
@@ -145,6 +165,16 @@ module IPersistence=
         texts |> shouldContain "delta"
         tags |> List.map (fun t -> t.Id) |> hasOnlyUniqueValues |> shouldEqual true
         
-        
-        
+    [<Test>]
+    let ``AddOrUpdateTag() adds it if it doe not yet exist``()=
+        let persistence= createWithEmptyBackStore()
+        persistence.AddOrUpdateTag (Tag.create "alpha")
+        persistence.GetTags() |> shouldContain {Id=Id.create 1; Text="alpha"}
+      
+    [<Test>]
+    let ``AddOrUpdateTag() updates if the tag already exists``()=
+        let persistence= createWithEmptyBackStore()
+        persistence.AddOrUpdateTag (Tag.create "alpha")
+        persistence.AddOrUpdateTag {Id= Id.create 1; Text="bravo"}
+        persistence.GetTags() |> shouldContain {Id= Id.create 1; Text="bravo"}
 
