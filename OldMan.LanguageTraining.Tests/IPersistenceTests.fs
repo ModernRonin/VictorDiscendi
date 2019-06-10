@@ -51,6 +51,8 @@ type FsProperty= FsCheck.Xunit.PropertyAttribute
 
 [<Properties(Arbitrary= [| typeof<Generators> |])>]
 module IPersistence=
+    let hasOnlyUniqueValues l = l |> Seq.groupBy id |> Seq.forall (fun (_, l) -> (Array.ofSeq l).Length=1)
+
     [<FsProperty>]
     let ``getting the configuration after updating it returns what it was updated to`` 
         (config: LanguageConfiguration)=
@@ -82,13 +84,13 @@ module IPersistence=
         (pairs: WordPair list)=
         let persistence= createWithEmptyBackStore()
         let ids= pairs |> List.map persistence.AddPair |> List.map (fun p -> p.Id)
-        ids |> List.groupBy id |> List.forall (fun (_, l) -> l.Length=1)
+        ids |> hasOnlyUniqueValues
 
     [<Test>]
     let ``adding the pairs X and Y followed by updating X to Z followed by gettting all pairs returns Z and Y``()=
         let persistence= createWithEmptyBackStore()
-        let x= {Id = Id.uninitialized; Left= Word "xl"; Right=Word "xr"; Created= DateTime.UtcNow; Tags=[]; ScoreCard= ScoreCard.create()}
-        let y= {Id = Id.uninitialized; Left= Word "yl"; Right=Word "yr"; Created= DateTime.UtcNow; Tags=[]; ScoreCard= ScoreCard.create()}
+        let x= WordPair.create (Word "xl", Word "xr", [])
+        let y= WordPair.create (Word "yl", Word "yr", [])
         let addedX= persistence.AddPair x
         let addedY= persistence.AddPair y
         let z= {addedX with Left=Word "alpha"; Right=Word "bravo"}
@@ -98,7 +100,36 @@ module IPersistence=
         allPairs |> shouldContain addedY
         allPairs |> shouldContain z
 
+    [<Test>]
+    let ``from an empty backstore, GetTags() returns an empty list``()=
+        let persistence= createWithEmptyBackStore()
+        persistence.GetTags() |> shouldBeEmpty
 
+    [<Test>]
+    let ``adding a pair implicitly adds its tags``()=
+        let persistence= createWithEmptyBackStore()
+        (Word "xl", Word "xr", [Tag.create "alpha"; Tag.create "bravo"]) |> WordPair.create |> persistence.AddPair |> ignore
+        let tags= persistence.GetTags()
+        tags |> shouldHaveLength 2
+        tags |> Tag.textsOf |> List.ofSeq |> shouldEqual ["alpha"; "bravo"]
+        tags |> List.map (fun t -> (Id.from t)) |> hasOnlyUniqueValues |> shouldEqual true
+        
+    [<Test>]
+    let ``getTags returns all distinct tags in all added pairs``()=
+        let persistence= createWithEmptyBackStore()
+        let add= WordPair.create >> persistence.AddPair >> ignore
+        (Word "a", Word "b", [Tag.create "alpha"; Tag.create "bravo"]) |> add
+        (Word "c", Word "d", [Tag.create "bravo"; Tag.create "charlie"]) |> add
+        (Word "e", Word "f", [Tag.create "charlie"; Tag.create "delta"]) |> add
+        let tags= persistence.GetTags()
+        tags |> shouldHaveLength 4
+        let texts= tags |> List.map (fun t -> t.Text)
+        texts |> shouldContain "alpha"
+        texts |> shouldContain "bravo"
+        texts |> shouldContain "charlie"
+        texts |> shouldContain "delta"
+        tags |> List.map (fun t -> t.Id) |> hasOnlyUniqueValues |> shouldEqual true
+        
         
         
 

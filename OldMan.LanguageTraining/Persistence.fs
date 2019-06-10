@@ -103,20 +103,6 @@ type private Tag with
 let private serializePairTagAssociation pairId tagId= PersistentTagPairAssociation.Row (tagId, pairId)
 
 
-// helpers
-let inline private idOf (x: ^R)=
-    (^R: (member Id: int64) (x))
-        
-        
-let inline private nextIdIn (rows: ^record seq)= 
-    let frozen= rows |> Seq.map idOf |> Array.ofSeq
-
-    Id (1L + match frozen with
-             | [||] -> 0L
-             | _ -> frozen |> Seq.max)
-       
-    
-
 
 type IPersistence=
     abstract member UpdateConfiguration: LanguageConfiguration->unit
@@ -158,7 +144,7 @@ type CsvPersistence(loader: Loader, saver: Saver)=
 
     let createPair (pair: WordPair)= 
         let existing= loadWords()
-        let nextId=  nextIdIn existing
+        let nextId=  Id.nextIdIn existing
         let result= {pair with Id=nextId}.Serialize()
         let updated= result |> List.singleton |> List.append existing
         saveWords updated
@@ -173,12 +159,12 @@ type CsvPersistence(loader: Loader, saver: Saver)=
         let existing= loadTags() 
         let doesNotExistYet (t:Tag) = existing |> List.exists (fun e -> e.Id=t.Id.Serialize()) |> not
         let newTags= tags |> List.filter doesNotExistYet
-        let nextId= nextIdIn existing
+        let nextId= Id.nextIdIn existing
         let assignNextId (index, tag): Tag = {tag with Id=nextId.AddDelta index}
         let newTagsWithIds= newTags |> List.indexed |> List.map assignNextId
         let updated= newTagsWithIds |> List.map (fun t -> t.Serialize()) |> List.append existing
         saveTags updated
-        updated |> List.map idOf
+        updated |> List.map Id.fromRaw |> List.map Id.unwrap
 
     let removeTags tagIds= 
         let existing= loadTags()
@@ -219,7 +205,7 @@ type CsvPersistence(loader: Loader, saver: Saver)=
   
         member this.GetPairs() = loadWords() |> List.map deserializePair
 
-        member this.GetTags() = loadTags() |> List.map Tag.Deserialize
+        member this.GetTags() = loadTags() |> List.map Tag.Deserialize |> List.distinct
         
         member this.UpdateTag newTag = 
             let serialized= newTag.Serialize()
