@@ -3,7 +3,7 @@
 open System
 open System.Globalization
 open FSharp.Data
-open Domain
+open OldMan.LanguageTraining.Domain
 
 // CSV Types:
 type private PersistentConfiguration = 

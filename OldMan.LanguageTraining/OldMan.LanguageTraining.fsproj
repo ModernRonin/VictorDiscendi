@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Id.fs" />
     <Compile Include="DomainModel.fs" />
     <Compile Include="Persistence.fs" />
     <Compile Include="Service.fs" />
