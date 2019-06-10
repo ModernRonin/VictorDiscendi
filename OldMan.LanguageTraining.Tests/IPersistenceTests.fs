@@ -113,14 +113,29 @@ module IPersistence=
         tags |> shouldHaveLength 2
         tags |> Tag.textsOf |> List.ofSeq |> shouldEqual ["alpha"; "bravo"]
         tags |> List.map (fun t -> (Id.from t)) |> hasOnlyUniqueValues |> shouldEqual true
-        
+
+    [<Test>]
+    let ``adding the same tag to two pairs does not create multiple copies``()=
+        let persistence= createWithEmptyBackStore()
+        (Word "xl", Word "xr", [Tag.create "alpha"]) |> WordPair.create |> persistence.AddPair |> ignore
+        let alpha= persistence.GetTags() |> List.head
+        (Word "yl", Word "yr", [alpha]) |> WordPair.create |> persistence.AddPair |> ignore
+        match persistence.GetTags() with
+        |[] -> Assert.Fail() 
+        |head::[] -> head |> shouldEqual {Id=Id.create 1; Text="alpha"}
+        |_ -> Assert.Fail()
+
+
     [<Test>]
     let ``getTags returns all distinct tags in all added pairs``()=
         let persistence= createWithEmptyBackStore()
         let add= WordPair.create >> persistence.AddPair >> ignore
+        let getTag text= persistence.GetTags() |> List.filter (fun t -> t.Text=text) |> List.head
         (Word "a", Word "b", [Tag.create "alpha"; Tag.create "bravo"]) |> add
-        (Word "c", Word "d", [Tag.create "bravo"; Tag.create "charlie"]) |> add
-        (Word "e", Word "f", [Tag.create "charlie"; Tag.create "delta"]) |> add
+        let bravo= getTag "bravo"
+        (Word "c", Word "d", [bravo; Tag.create "charlie"]) |> add
+        let charlie= getTag "charlie"
+        (Word "e", Word "f", [charlie; Tag.create "delta"]) |> add
         let tags= persistence.GetTags()
         tags |> shouldHaveLength 4
         let texts= tags |> List.map (fun t -> t.Text)
