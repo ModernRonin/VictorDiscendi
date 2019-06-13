@@ -27,7 +27,7 @@ module RawQuestion=
                 Question= pair.Right
                 Answer= pair.Left
                 SideOfAnswer= Left
-                Score= pair.ScoreCard.LeftScore
+                Score= pair.ScoreCard.RightScore
                 LastAsked= pair.ScoreCard.LastAsked
             }
         ]
