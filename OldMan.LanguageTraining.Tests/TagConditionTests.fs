@@ -70,3 +70,19 @@ module isFulfilledBy=
         [<Test>]
         let ``and a list matching both sub-conditions is true``()=
             ["x"; "a"; "z"; "b"] |> toTags |> underTest |> shouldEqual true
+
+module filter=
+    [<Test>]
+    let ``return those pairs whose tags fulfill the condition``()=
+        let makePair (left, right, tag) =
+            WordPair.create (Word left, Word right, Tag.create tag |> List.singleton)
+        let pairs= 
+            [
+                ("l1", "r1", "a")
+                ("l2", "r2", "b")
+                ("l3", "r3", "a")
+                ("l4", "r4", "c")
+            ]  |> List.map makePair
+        let condition= TagIsContained (Tag.create "a")
+
+        pairs |> TagCondition.filter condition |> List.map (fun p -> Word.unwrap p.Left) |> shouldEqual ["l1"; "l3"]
