@@ -1,4 +1,4 @@
-﻿module OldMan.LanguageTraining.Tests.DomainLogic.TagCondition
+﻿namespace OldMan.LanguageTraining.Tests.DomainLogic.TagCondition
 
 open NUnit.Framework
 open FsUnitTyped

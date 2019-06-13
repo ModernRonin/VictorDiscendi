@@ -1,13 +1,8 @@
 ﻿namespace OldMan.LanguageTraining.Tests.DomainLogic
 
-
-
-
-open FsCheck
 open FsUnitTyped
 open NUnit.Framework
 open OldMan.LanguageTraining.Domain
-//open Setup
 
 type FsProperty= FsCheck.Xunit.PropertyAttribute
 
