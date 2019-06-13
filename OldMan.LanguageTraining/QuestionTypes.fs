@@ -1,0 +1,3 @@
+﻿namespace OldMan.LanguageTraining.Domain
+
+

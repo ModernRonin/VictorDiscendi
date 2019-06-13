@@ -6,7 +6,20 @@
 
   <ItemGroup>
     <Compile Include="Id.fs" />
-    <Compile Include="DomainModel.fs" />
+    <Compile Include="Word.fs" />
+    <Compile Include="Score.fs" />
+    <Compile Include="Counts.fs" />
+    <Compile Include="Tags.fs" />
+    <Compile Include="ScoreCard.fs" />
+    <Compile Include="WordPair.fs" />
+    <Compile Include="TagCondition.fs" />
+    <Compile Include="LanguageConfiguration.fs" />
+    <Compile Include="SideAndDirection.fs" />
+    <Compile Include="QuizSettings.fs" />
+    <Compile Include="WordReference.fs" />
+    <Compile Include="QuestionTypes.fs" />
+    <Compile Include="Questions.fs" />
+    <Compile Include="Scoring.fs" />
     <Compile Include="Persistence.fs" />
     <Compile Include="Service.fs" />
   </ItemGroup>

@@ -1,6 +1,7 @@
 ﻿namespace OldMan.LanguageTraining.Domain
 
 type Id = Id of int64 
+
 module Id=
     let unwrap (Id i)= i
     let uninitialized= Id (int64 0)
