@@ -17,7 +17,7 @@
     <Compile Include="SideAndDirection.fs" />
     <Compile Include="QuizSettings.fs" />
     <Compile Include="WordReference.fs" />
-    <Compile Include="QuestionTypes.fs" />
+    <Compile Include="RawQuestion.fs" />
     <Compile Include="Questions.fs" />
     <Compile Include="Scoring.fs" />
     <Compile Include="Persistence.fs" />

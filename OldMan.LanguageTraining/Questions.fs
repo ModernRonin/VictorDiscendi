@@ -1,11 +1,16 @@
 ﻿namespace OldMan.LanguageTraining.Domain
 
-open System
 type FreeEntryQuestion=
     {
         Prompt: string
         CorrectAnswer: string
     }
+module FreeEntryQuestion=
+    let from raw= {
+                    Prompt= Word.unwrap raw.Question
+                    CorrectAnswer= Word.unwrap raw.Answer
+                  }
+
 
 type MultipleChoiceQuestion=
     {
@@ -13,58 +18,17 @@ type MultipleChoiceQuestion=
         Choices: string list
         CorrectAnswer: string
     }
+module MultipleChoiceQuestion=
+    let from raw alternativeAnswers= {
+                                        Prompt= Word.unwrap raw.Question
+                                        CorrectAnswer= Word.unwrap raw.Answer
+                                        Choices= Word.unwrap raw.Answer :: alternativeAnswers
+                                     }
+
 
 type Question=
     | FreeEntryQuestion of FreeEntryQuestion
     | MultipleChoiceQuestion of MultipleChoiceQuestion
-
-
-
-type RawQuestion=
-    {
-        PairId: Id
-        Question: Word 
-        Answer: Word 
-        SideOfAnswer: Side
-        Score: Score
-        LastAsked: DateTime
-    }
-module RawQuestion=
-    let toFreeEntry raw= FreeEntryQuestion 
-                            {
-                                Prompt= Word.unwrap raw.Question
-                                CorrectAnswer= Word.unwrap raw.Answer
-                            }
-    let toMultipleChoice raw alternativeAnswers= MultipleChoiceQuestion 
-                                                    {
-                                                        Prompt= Word.unwrap raw.Question
-                                                        CorrectAnswer= Word.unwrap raw.Answer
-                                                        Choices= Word.unwrap raw.Answer :: alternativeAnswers
-                                                    }
-    let ofPair pair= 
-        [
-            {
-                PairId= pair.Id
-                Question= pair.Left
-                Answer= pair.Right
-                SideOfAnswer= Right
-                Score= pair.ScoreCard.LeftScore
-                LastAsked= pair.ScoreCard.LastAsked
-            }
-            {
-                PairId= pair.Id
-                Question= pair.Right
-                Answer= pair.Left
-                SideOfAnswer= Left
-                Score= pair.ScoreCard.LeftScore
-                LastAsked= pair.ScoreCard.LastAsked
-            }
-        ]
-    let toReference raw= 
-        {
-            PairId= raw.PairId
-            Side= raw.SideOfAnswer
-        }
 
 module Question=
     let private getCandidates settings pairs= 
@@ -79,13 +43,19 @@ module Question=
         pairs |> matchTags |> List.collect RawQuestion.ofPair 
               |> List.filter matchSide |> List.filter matchScore
 
+    
     let create pairs settings=
         let candidates= getCandidates settings pairs 
         let raw = candidates |> List.minBy (fun r -> r.LastAsked)
-        let question= match settings.Type with
-                        | FreeEntry -> RawQuestion.toFreeEntry raw
-                        | MultipleChoice choiceSettings -> 
-                                candidates |> List.except [raw] 
-                                |> List.sortBy (fun r -> r.Score) |> List.take (ChoiceCount.minusOne choiceSettings.NumberOfChoices)
-                                |> List.map (fun r -> Word.unwrap r.Answer) |> RawQuestion.toMultipleChoice raw 
+        let question= 
+                match settings.Type with
+                | FreeEntry 
+                    -> FreeEntryQuestion (FreeEntryQuestion.from raw)
+                | MultipleChoice choiceSettings 
+                    -> MultipleChoiceQuestion 
+                        (
+                            candidates |> List.except [raw] 
+                            |> List.sortBy (fun r -> r.Score) |> List.take (ChoiceCount.minusOne choiceSettings.NumberOfChoices)
+                            |> List.map (fun r -> Word.unwrap r.Answer) |> MultipleChoiceQuestion.from raw 
+                        )
         RawQuestion.toReference raw, question 
