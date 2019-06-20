@@ -1,4 +1,4 @@
-﻿module OldMan.LanguageTraining.Service
+﻿namespace OldMan.LanguageTraining
 
 open OldMan.LanguageTraining.Domain
 open OldMan.LanguageTraining.Persistence
@@ -9,7 +9,7 @@ type IService=
     abstract member addWordPair: (Word*Word*Tag list) -> WordPair
     abstract member updateWordPair: Id * (Word*Word*Tag list) -> unit
     abstract member listWordPairsForTags: (TagCondition) -> WordPair list
-    abstract member listTags: (unit) -> Tag list
+    abstract member listTags: (unit) -> (Tag*int) list
     abstract member updateLanguageNames: (LanguageConfiguration) -> unit
     abstract member getLanguageNames: (unit) -> LanguageConfiguration
     abstract member generateQuestion: (QuizSettings) -> WordReference*Question
@@ -26,7 +26,10 @@ type Service(persistence: IPersistence)=
             definition |> WordPair.create |> persistence.AddPair 
         member this.updateWordPair (id,definition)=
             {(definition |> WordPair.create) with Id=id} |> persistence.UpdatePair
-        member this.listTags()= persistence.GetTags()
+        member this.listTags()= 
+            let pairs= persistence.GetPairs()
+            let count tag= pairs |> List.filter (fun p -> p.Tags |> List.contains tag) |> List.length
+            pairs |> List.collect (fun p -> p.Tags) |> List.distinct |> List.map (fun t -> (t, (count t)))
 
         member this.generateQuestion(settings)= persistence.GetPairs() |> Question.create <| settings
 
