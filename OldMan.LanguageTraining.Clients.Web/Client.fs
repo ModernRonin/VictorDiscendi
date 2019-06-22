@@ -12,7 +12,7 @@ open WebSharper.Mvu
 
 open OldMan.LanguageTraining.Domain
 
-type MainTemplate= Template<"wwwroot/index.html", ClientLoad.FromDocument>
+//type MainTemplate= Template<"wwwroot/index.html", ClientLoad.FromDocument>
     
 let log x = Console.Log x
 
@@ -46,7 +46,11 @@ module Tag=
 
     let render (dispatch: Message -> unit) (state: View<Model>)=
         (sprintf "Tag.render with %A" state) |> log
-        MainTemplate.Row().Text(state.V.Text).UsageCount(string state.V.UsageCount).Doc()
+        //MainTemplate.Row().Text(state.V.Text).UsageCount(string state.V.UsageCount).Doc()
+        tr [] [
+            td [] [ text state.V.Text]
+            td [] [ text (string state.V.UsageCount)]
+        ]
 
 
 module Main =    
@@ -69,12 +73,31 @@ module Main =
         match msg with
         | _ -> model    
 
+
     let render (dispatch: Message -> unit) (state: View<Model>)=
-        (sprintf "Main.render with %A" state) |> log
-        MainTemplate
-            .Table()
-            .Body((V state.V.Tags).DocSeqCached(Tag.idOf, (fun id tagModel ->  Tag.render ignore tagModel)))
-            .Doc()
+        (sprintf "xMain.render with %A" state) |> log
+        //MainTemplate
+        //    .Table()
+        //    .Body((V state.V.Tags).DocSeqCached(Tag.idOf, (fun id tagModel ->  Tag.render ignore tagModel)))
+        //    .Doc()
+
+        let tags= V (state.V.Tags)
+        div [] [
+               h1 [] [ text "Tag List" ]
+               table [] [
+                    thead [] [
+                        tr [] [
+                            th [] [ text "Name" ]
+                            th [] [ text "Count"]
+                        ]
+                    ]
+                    tbody [] [tags.DocSeqCached(Tag.idOf, fun id t -> Tag.render ignore t)]
+               ]
+               ul [] [
+                   li [] [ text "..." ]
+               ]
+           ]
+
 
 [<SPAEntryPoint>]
 let Main () =
@@ -83,3 +106,4 @@ let Main () =
     |> App.WithLocalStorage "VictorDiscendisDev"
     |> App.WithRemoteDev (RemoteDev.Options(hostname = "localhost", port = 8000))
     |> App.Run
+    |> Doc.RunById "main"
