@@ -1,5 +1,5 @@
 [<WebSharper.JavaScript>]
-module TodoMvc.Client
+module OldMan.LanguageTraining.Clients.Web
 
 open WebSharper
 open WebSharper.JavaScript

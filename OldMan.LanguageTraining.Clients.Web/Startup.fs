@@ -1,10 +1,8 @@
-namespace OldMan.LanguageTraining.Clients.Web
+namespace OldMan.LanguageTraining.Clients.WebHosting
 
-open System
 open Microsoft.AspNetCore.Builder
 open Microsoft.AspNetCore.Hosting
 open Microsoft.AspNetCore.Http
-open Microsoft.Extensions.Configuration
 open Microsoft.Extensions.DependencyInjection
 
 type Startup() =

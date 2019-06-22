@@ -1,4 +1,4 @@
-﻿namespace OldMan.LanguageTraining.Clients.Web
+﻿namespace OldMan.LanguageTraining.Clients.WebHosting
 
 open Microsoft.AspNetCore
 open Microsoft.AspNetCore.Hosting

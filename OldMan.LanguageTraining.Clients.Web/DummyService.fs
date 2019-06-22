@@ -1,10 +1,10 @@
-﻿namespace OldMan.LanguageTraining.Clients.Web
+﻿module OldMan.LanguageTraining.Dummy
 
 open System
 open OldMan.LanguageTraining
 open OldMan.LanguageTraining.Domain
 
-type DummyService()=
+type Service()=
     let pair english german tags= 
         WordPair.create (Word english, Word german, tags |> List.map Tag.create)
     let mutable pairs= 
