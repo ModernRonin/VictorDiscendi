@@ -86,11 +86,6 @@ module Main =
         MainTemplate.TagList().Body(tags).Doc()
     )
 
-    
-    //let renderTagListPage (state:View<=
-    //    let tags= (V (state.V.Tags)).DocSeqCached(Tag.idOf, fun id t -> Tag.render ignore t) |> Seq.singleton
-    //    MainTemplate.TagList().Body(tags).Doc()
-        
     let page (state: Model)=
         match state.Endpoint with
         | WelcomePage -> welcomePage()
