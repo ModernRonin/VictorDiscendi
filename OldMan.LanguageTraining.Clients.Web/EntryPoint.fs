@@ -1,12 +1,10 @@
-﻿[<WebSharper.JavaScript>]
-module OldMan.LanguageTraining.Clients.Web
+﻿module OldMan.LanguageTraining.Clients.Web
 
 open WebSharper
 open WebSharper.Mvu
 open WebSharper.Sitelets.InferRouter
 open WebSharper.UI
 open WebSharper.UI.Client
-
 
 open OldMan.LanguageTraining.Web
 
@@ -22,3 +20,5 @@ let Main () =
     |> Doc.RunById "site"
 
 
+[<assembly: WebSharper.JavaScript>]
+do()

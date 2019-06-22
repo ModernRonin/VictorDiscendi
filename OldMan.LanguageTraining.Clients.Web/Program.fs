@@ -3,6 +3,7 @@
 open Microsoft.AspNetCore
 open Microsoft.AspNetCore.Hosting
 
+[<WebSharper.JavaScript(false)>]
 module Program =
     let BuildWebHost args =
         WebHost

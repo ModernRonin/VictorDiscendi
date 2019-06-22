@@ -1,4 +1,3 @@
-[<WebSharper.JavaScript>]
 module OldMan.LanguageTraining.Web.Site
 
 open WebSharper

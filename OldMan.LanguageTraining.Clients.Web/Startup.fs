@@ -5,10 +5,9 @@ open Microsoft.AspNetCore.Hosting
 open Microsoft.AspNetCore.Http
 open Microsoft.Extensions.DependencyInjection
 
+[<WebSharper.JavaScript(false)>]
 type Startup() =
-
-    member this.ConfigureServices(services: IServiceCollection) =
-        ()
+    member this.ConfigureServices(services: IServiceCollection) = ()
 
     member this.Configure(app: IApplicationBuilder, env: IHostingEnvironment) =
         if env.IsDevelopment() then app.UseDeveloperExceptionPage() |> ignore

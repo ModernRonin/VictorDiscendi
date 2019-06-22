@@ -1,5 +1,4 @@
-﻿[<WebSharper.JavaScript>]
-module OldMan.LanguageTraining.Web.Tag
+﻿module OldMan.LanguageTraining.Web.Tag
 
 open WebSharper
 open WebSharper.UI

@@ -1,5 +1,4 @@
-﻿[<WebSharper.JavaScript>]
-module OldMan.LanguageTraining.Web.Templates
+﻿module OldMan.LanguageTraining.Web.Templates
 
 open WebSharper.UI.Templating
 
