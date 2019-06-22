@@ -5,6 +5,7 @@ module CsvPersistence=
     open NUnit.Framework
     open FsUnitTyped
     open OldMan.LanguageTraining.Persistence
+    open OldMan.LanguageTraining
     open OldMan.LanguageTraining.Domain
     
     let shouldNotHappen() = raise (AssertionException("Should not get here"))

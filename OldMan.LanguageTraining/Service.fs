@@ -1,8 +1,6 @@
 ﻿namespace OldMan.LanguageTraining
 
 open OldMan.LanguageTraining.Domain
-open OldMan.LanguageTraining.Persistence
-
 
 type IService=
     abstract member listWordPairs: (unit) -> WordPair list

@@ -26,6 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\OldMan.LanguageTraining.Persistence\OldMan.LanguageTraining.Persistence.fsproj" />
     <ProjectReference Include="..\OldMan.LanguageTraining\OldMan.LanguageTraining.fsproj" />
   </ItemGroup>
 

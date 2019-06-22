@@ -25,7 +25,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="FSharp.Data" Version="3.1.1" />
     <PackageReference Include="WebSharper.FSharp" Version="4.5.14.339" />
   </ItemGroup>
 
