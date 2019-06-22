@@ -16,10 +16,10 @@ type Service()=
             {
                 pair "old" "alt" ["adjective"] 
                 with 
-                    Created= new DateTime(1974, 7, 23, 0, 2, 0, DateTimeKind.Utc)
+                    Created= new DateTime(1974, 7, 23, 0, 2, 0)
                     ScoreCard= 
                     {
-                        LastAsked= new DateTime(2018, 02, 03, 16, 30, 0, DateTimeKind.Utc)
+                        LastAsked= new DateTime(2018, 02, 03, 16, 30, 0)
                         TimesAsked= Count 13u
                         LeftScore= Score 7
                         RightScore= Score 5
