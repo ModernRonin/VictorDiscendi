@@ -19,7 +19,7 @@ module Setup=
 
     let createWithEmptyBackStore()= 
         let backStore= new BackStore()
-        (new CsvPersistence(backStore.Load, backStore.Save)) :> IPersistence
+        (new CsvPersistence(backStore.Load, backStore.Save)) :> OldMan.LanguageTraining.IPersistence
 
     let stringGenerator= 
         Arb.Default.Char().Generator |> 
