@@ -9,7 +9,9 @@
   <ItemGroup>
     <Compile Include="DummyService.fs" />
     <Compile Include="Templating.fs" />
+    <Compile Include="Tags.fs" />
     <Compile Include="Site.fs" />
+    <Compile Include="EntryPoint.fs" />
     <Compile Include="Startup.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
