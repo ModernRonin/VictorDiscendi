@@ -5,7 +5,6 @@ open WebSharper
 open WebSharper.UI
 
 open OldMan.LanguageTraining.Domain
-open OldMan.LanguageTraining.Web.Templates
 
 type Model= 
     {
@@ -34,7 +33,7 @@ let update msg model=
     model
 
 let render (dispatch: Message -> unit) (state: View<Model>)=
-    MainTemplate.Row().Text(state.V.Text).UsageCount(string state.V.UsageCount).Doc()
+    Templates.TagListRow().Text(state.V.Text).UsageCount(string state.V.UsageCount).Doc()
 
 
 

@@ -7,7 +7,6 @@ open WebSharper.UI.Client
 open WebSharper.Mvu
 
 open OldMan.LanguageTraining.Web
-open OldMan.LanguageTraining.Web.Templates
 
 
 type Endpoint=
@@ -37,16 +36,16 @@ let update msg (model: State)=
 
 
 let welcomePage= Page.Single(fun (dispatch: Dispatch<Message>) (state: View<State>) ->
-    MainTemplate.Welcome().Doc()
+    Templates.Welcome().Doc()
 )
 
 let otherPage= Page.Single(fun (dispatch: Dispatch<Message>) (state: View<State>) ->
-    MainTemplate.Other().Doc()
+    Templates.Other().Doc()
 )
 
 let tagListPage= Page.Single(fun (dispatch: Dispatch<Message>) (state: View<State>) ->
     let tags= (V (state.V.Tags)).DocSeqCached(Tag.idOf, fun id t -> Tag.render ignore t) |> Seq.singleton
-    MainTemplate.TagList().Body(tags).Doc()
+    Templates.TagList().Body(tags).Doc()
 )
 
 let page (state: State)=
