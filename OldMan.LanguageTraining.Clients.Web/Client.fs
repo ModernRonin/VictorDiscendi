@@ -46,13 +46,13 @@ module Tag=
         MainTemplate.Row().Text(state.V.Text).UsageCount(string state.V.UsageCount).Doc()
 
 
-module Main =    
+module Site =    
     type Endpoint=
         | [<EndPoint "/tags">] TagListPage
         | [<EndPoint "/">] WelcomePage
         | [<EndPoint "/other">] OtherPage
 
-    type Model=
+    type State=
         {
             Endpoint : Endpoint
             Tags: Tag.Model list
@@ -68,25 +68,25 @@ module Main =
     type Message =
         | Nil
 
-    let update msg (model: Model)=
+    let update msg (model: State)=
         match msg with
         | _ -> model    
 
 
-    let welcomePage= Page.Single(fun (dispatch: Dispatch<Message>) (state: View<Model>) ->
+    let welcomePage= Page.Single(fun (dispatch: Dispatch<Message>) (state: View<State>) ->
         MainTemplate.Welcome().Doc()
     )
 
-    let otherPage= Page.Single(fun (dispatch: Dispatch<Message>) (state: View<Model>) ->
+    let otherPage= Page.Single(fun (dispatch: Dispatch<Message>) (state: View<State>) ->
         MainTemplate.Other().Doc()
     )
 
-    let tagListPage= Page.Single(fun (dispatch: Dispatch<Message>) (state: View<Model>) ->
+    let tagListPage= Page.Single(fun (dispatch: Dispatch<Message>) (state: View<State>) ->
         let tags= (V (state.V.Tags)).DocSeqCached(Tag.idOf, fun id t -> Tag.render ignore t) |> Seq.singleton
         MainTemplate.TagList().Body(tags).Doc()
     )
 
-    let page (state: Model)=
+    let page (state: State)=
         match state.Endpoint with
         | WelcomePage -> welcomePage()
         | OtherPage -> otherPage()
@@ -95,9 +95,11 @@ module Main =
 
 [<SPAEntryPoint>]
 let Main () =
-    App.CreateSimplePaged (Main.init()) Main.update Main.page
-    |> App.WithRouting (Router.Infer()) (fun (model: Main.Model) -> model.Endpoint)
+    App.CreateSimplePaged (Site.init()) Site.update Site.page
+    |> App.WithRouting (Router.Infer()) (fun (model: Site.State) -> model.Endpoint)
+#if DEBUG
     |> App.WithLocalStorage "VictorDiscendisDev"
     |> App.WithRemoteDev (RemoteDev.Options(hostname = "localhost", port = 8000))
+#endif
     |> App.Run
-    |> Doc.RunById "main"
+    |> Doc.RunById "site"
