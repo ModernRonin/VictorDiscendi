@@ -12,7 +12,7 @@ open WebSharper.Mvu
 
 open OldMan.LanguageTraining.Domain
 
-//type MainTemplate= Template<"wwwroot/index.html", ClientLoad.FromDocument>
+type MainTemplate= Template<"wwwroot/index.html", ClientLoad.FromDocument>
     
 let log x = Console.Log x
 
@@ -46,11 +46,7 @@ module Tag=
 
     let render (dispatch: Message -> unit) (state: View<Model>)=
         (sprintf "Tag.render with %A" state) |> log
-        //MainTemplate.Row().Text(state.V.Text).UsageCount(string state.V.UsageCount).Doc()
-        tr [] [
-            td [] [ text state.V.Text]
-            td [] [ text (string state.V.UsageCount)]
-        ]
+        MainTemplate.Row().Text(state.V.Text + "_tpl").UsageCount(string state.V.UsageCount).Doc()
 
 
 module Main =    
@@ -81,7 +77,7 @@ module Main =
         //    .Body((V state.V.Tags).DocSeqCached(Tag.idOf, (fun id tagModel ->  Tag.render ignore tagModel)))
         //    .Doc()
 
-        let tags= V (state.V.Tags)
+        let tags= (V (state.V.Tags)).DocSeqCached(Tag.idOf, fun id t -> Tag.render ignore t) |> Seq.singleton
         div [] [
                h1 [] [ text "Tag List" ]
                table [] [
@@ -91,7 +87,7 @@ module Main =
                             th [] [ text "Count"]
                         ]
                     ]
-                    tbody [] [tags.DocSeqCached(Tag.idOf, fun id t -> Tag.render ignore t)]
+                    tbody [] tags
                ]
                ul [] [
                    li [] [ text "..." ]
