@@ -72,27 +72,9 @@ module Main =
 
     let render (dispatch: Message -> unit) (state: View<Model>)=
         (sprintf "xMain.render with %A" state) |> log
-        //MainTemplate
-        //    .Table()
-        //    .Body((V state.V.Tags).DocSeqCached(Tag.idOf, (fun id tagModel ->  Tag.render ignore tagModel)))
-        //    .Doc()
 
         let tags= (V (state.V.Tags)).DocSeqCached(Tag.idOf, fun id t -> Tag.render ignore t) |> Seq.singleton
-        div [] [
-               h1 [] [ text "Tag List" ]
-               table [] [
-                    thead [] [
-                        tr [] [
-                            th [] [ text "Name" ]
-                            th [] [ text "Count"]
-                        ]
-                    ]
-                    tbody [] tags
-               ]
-               ul [] [
-                   li [] [ text "..." ]
-               ]
-           ]
+        MainTemplate.TagList().Body(tags).Doc()
 
 
 [<SPAEntryPoint>]

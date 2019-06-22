@@ -17,6 +17,7 @@
 <body id="main">    
 
 <div ws-template="TagList">
+    <h1>Tag List</h1>
     <table>
         <thead>
         <tr>
@@ -24,9 +25,9 @@
         </tr>
         </thead>
         <tbody ws-hole="Body">
-            <tr ws-template="Row">
-                <td>${Text}</td><td>${UsageCount}</td>
-            </tr>
+        <tr ws-template="Row">
+            <td><b>${Text}</b></td><td>(${UsageCount})</td>
+        </tr>
         </tbody>
     </table>
 </div>
