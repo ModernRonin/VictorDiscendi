@@ -47,13 +47,20 @@ module Tag=
 
 
 module Main =    
-    type Model =
+    type Endpoint=
+        | [<EndPoint "/tags">] TagListPage
+        | [<EndPoint "/">] WelcomePage
+        | [<EndPoint "/other">] OtherPage
+
+    type Model=
         {
+            Endpoint : Endpoint
             Tags: Tag.Model list
         }
 
-    let init() =
+    let init()= 
         {
+            Endpoint= WelcomePage
             Tags= Tag.sample()
         }
 
@@ -66,15 +73,35 @@ module Main =
         | _ -> model    
 
 
-    let render (dispatch: Message -> unit) (state: View<Model>)=
+    let welcomePage= Page.Single(fun (dispatch: Dispatch<Message>) (state: View<Model>) ->
+        MainTemplate.Welcome().Doc()
+    )
+
+    let otherPage= Page.Single(fun (dispatch: Dispatch<Message>) (state: View<Model>) ->
+        MainTemplate.Other().Doc()
+    )
+
+    let tagListPage= Page.Single(fun (dispatch: Dispatch<Message>) (state: View<Model>) ->
         let tags= (V (state.V.Tags)).DocSeqCached(Tag.idOf, fun id t -> Tag.render ignore t) |> Seq.singleton
         MainTemplate.TagList().Body(tags).Doc()
+    )
+
+    
+    //let renderTagListPage (state:View<=
+    //    let tags= (V (state.V.Tags)).DocSeqCached(Tag.idOf, fun id t -> Tag.render ignore t) |> Seq.singleton
+    //    MainTemplate.TagList().Body(tags).Doc()
+        
+    let page (state: Model)=
+        match state.Endpoint with
+        | WelcomePage -> welcomePage()
+        | OtherPage -> otherPage()
+        | TagListPage -> tagListPage()
 
 
 [<SPAEntryPoint>]
 let Main () =
-    App.CreateSimple (Main.init()) Main.update Main.render
-//    |> App.WithRouting (Router.Infer()) (fun (model: TodoList.Model) -> model.EndPoint)
+    App.CreateSimplePaged (Main.init()) Main.update Main.page
+    |> App.WithRouting (Router.Infer()) (fun (model: Main.Model) -> model.Endpoint)
     |> App.WithLocalStorage "VictorDiscendisDev"
     |> App.WithRemoteDev (RemoteDev.Options(hostname = "localhost", port = 8000))
     |> App.Run
