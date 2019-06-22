@@ -14,6 +14,7 @@ open OldMan.LanguageTraining.Domain
 
 type MainTemplate= Template<"wwwroot/index.html", ClientLoad.FromDocument>
     
+let log x = Console.Log x
 
 module Tag=
     type Model= 
@@ -40,9 +41,11 @@ module Tag=
     type Message = 
         | Nil
     let update msg model=
+        (sprintf "Tag.update with %A" model) |> log
         model
 
     let render (dispatch: Message -> unit) (state: View<Model>)=
+        (sprintf "Tag.render with %A" state) |> log
         MainTemplate.Row().Text(state.V.Text).UsageCount(string state.V.UsageCount).Doc()
 
 
@@ -52,20 +55,22 @@ module Main =
             Tags: Tag.Model list
         }
 
-        static member empty =
-            {
-                Tags= Tag.sample()
-            }
+    let init() =
+        {
+            Tags= Tag.sample()
+        }
 
     [<NamedUnionCases "type">]
     type Message =
         | Nil
 
     let update msg (model: Model)=
+        (sprintf "Main.update with %A" model) |> log
         match msg with
-        | _ -> model
+        | _ -> model    
 
     let render (dispatch: Message -> unit) (state: View<Model>)=
+        (sprintf "Main.render with %A" state) |> log
         MainTemplate
             .Table()
             .Body((V state.V.Tags).DocSeqCached(Tag.idOf, (fun id tagModel ->  Tag.render ignore tagModel)))
@@ -73,7 +78,7 @@ module Main =
 
 [<SPAEntryPoint>]
 let Main () =
-    App.CreateSimple Main.Model.empty Main.update Main.render
+    App.CreateSimple (Main.init()) Main.update Main.render
 //    |> App.WithRouting (Router.Infer()) (fun (model: TodoList.Model) -> model.EndPoint)
     |> App.WithLocalStorage "VictorDiscendisDev"
     |> App.WithRemoteDev (RemoteDev.Options(hostname = "localhost", port = 8000))
