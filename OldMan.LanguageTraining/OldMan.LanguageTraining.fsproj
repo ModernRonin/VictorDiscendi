@@ -24,8 +24,4 @@
     <Compile Include="Service.fs" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="FSharp.Data" Version="3.1.1" />
-  </ItemGroup>
-
 </Project>
