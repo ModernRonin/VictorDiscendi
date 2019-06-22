@@ -7,13 +7,10 @@ open WebSharper.Sitelets.InferRouter
 open WebSharper.UI
 open WebSharper.UI.Html
 open WebSharper.UI.Client
-open WebSharper.UI.Templating
 open WebSharper.Mvu
 
 open OldMan.LanguageTraining.Domain
-
-type MainTemplate= Template<"wwwroot/index.html", ClientLoad.FromDocument>
-    
+open OldMan.LanguageTraining.Web.Templates
 
 module Tag=
     type Model= 
