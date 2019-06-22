@@ -14,7 +14,6 @@ open OldMan.LanguageTraining.Domain
 
 type MainTemplate= Template<"wwwroot/index.html", ClientLoad.FromDocument>
     
-let log x = Console.Log x
 
 module Tag=
     type Model= 
@@ -41,12 +40,10 @@ module Tag=
     type Message = 
         | Nil
     let update msg model=
-        (sprintf "Tag.update with %A" model) |> log
         model
 
     let render (dispatch: Message -> unit) (state: View<Model>)=
-        (sprintf "Tag.render with %A" state) |> log
-        MainTemplate.Row().Text(state.V.Text + "_tpl").UsageCount(string state.V.UsageCount).Doc()
+        MainTemplate.Row().Text(state.V.Text).UsageCount(string state.V.UsageCount).Doc()
 
 
 module Main =    
@@ -65,14 +62,11 @@ module Main =
         | Nil
 
     let update msg (model: Model)=
-        (sprintf "Main.update with %A" model) |> log
         match msg with
         | _ -> model    
 
 
     let render (dispatch: Message -> unit) (state: View<Model>)=
-        (sprintf "xMain.render with %A" state) |> log
-
         let tags= (V (state.V.Tags)).DocSeqCached(Tag.idOf, fun id t -> Tag.render ignore t) |> Seq.singleton
         MainTemplate.TagList().Body(tags).Doc()
 
