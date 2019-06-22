@@ -1,9 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
     <Compile Include="Id.fs" />
     <Compile Include="Word.fs" />
@@ -23,9 +22,5 @@
     <Compile Include="Persistence.fs" />
     <Compile Include="Service.fs" />
   </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="WebSharper.FSharp" Version="4.5.14.339" />
-  </ItemGroup>
-
+  <Import Project="..\.paket\Paket.Restore.targets" />
 </Project>

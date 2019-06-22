@@ -1,22 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
 <Project Sdk="Microsoft.NET.Sdk">
-
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="FsCheck.Xunit" Version="2.14.0" />
-    <PackageReference Include="FsUnit" Version="3.4.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.1.1" />
-    <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
-
   <ItemGroup>
     <Compile Include="IdTests.fs" />
     <Compile Include="TagConditionTests.fs" />
@@ -24,10 +11,9 @@
     <Compile Include="CsvPersistenceTests.fs" />
     <Compile Include="IPersistenceTests.fs" />
   </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\OldMan.LanguageTraining.Persistence\OldMan.LanguageTraining.Persistence.fsproj" />
     <ProjectReference Include="..\OldMan.LanguageTraining\OldMan.LanguageTraining.fsproj" />
   </ItemGroup>
-
+  <Import Project="..\.paket\Paket.Restore.targets" />
 </Project>

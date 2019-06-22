@@ -1,0 +1,10 @@
+source https://api.nuget.org/v3/index.json
+
+nuget FsCheck.Xunit 
+nuget FSharp.Data 
+nuget FsUnit 
+nuget Microsoft.AspNetCore.All
+nuget WebSharper.FSharp 
+nuget WebSharper.Mvu 
+nuget xunit 
+nuget xunit.runner.visualstudio 
