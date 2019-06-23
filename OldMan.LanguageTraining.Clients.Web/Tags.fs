@@ -7,59 +7,19 @@ open WebSharper.Mvu
 
 open OldMan.LanguageTraining.Clients
 open OldMan.LanguageTraining.Domain
-type DomainTag= OldMan.LanguageTraining.Domain.Tag
-
-module Tag=
-    type State= 
-        {
-            Id: Id
-            Text: string
-            UsageCount: int
-        }
-
-    let idOf state= state.Id
-
-    let empty()= 
-        {
-            Id= Id.uninitialized
-            Text= ""
-            UsageCount= 0 
-        }
-
-    let fromDomain ((tag: DomainTag), usageCount)= 
-        {
-            Id= tag.Id
-            Text= tag.Text
-            UsageCount= usageCount
-        }
-
-
-    [<NamedUnionCases "type">]
-    type Message = 
-        | Delete of Id
-
-    let update msg state=
-        state
-
-    let render (dispatch: Message Dispatch) (state: View<State>)=
-        Templates.TagListRow()
-            .Text(state.V.Text)
-            .UsageCount(string state.V.UsageCount)
-            .Delete(fun _ -> dispatch (Delete state.V.Id))
-            .Doc()
 
 module TagList=
     type State= 
         {
-            Tags: Tag.State list
+            Tags: (Tag*int) list
         }
     let refresh()= 
         WebSharper.JavaScript.Console.Log ("refreshing taglist...")
         {
-            Tags= Api.service().ListTags() |> List.map Tag.fromDomain
+            Tags= Api.service().ListTags() 
         }
     let delete id state=
-        let without= state.Tags |> List.filter (fun t -> t.Id<>id)
+        let without= state.Tags |> List.filter (fun (t, _) -> t.Id<>id)
         { state with Tags=without }
 
     [<NamedUnionCases "type">]
@@ -78,7 +38,16 @@ module TagList=
         | Delete id -> delete id state
 
     let render (dispatch: Message Dispatch) (state: View<State>)=
-        let tags= (V (state.V.Tags)).DocSeqCached(Tag.idOf, fun id t -> Tag.render ignore t) |> Seq.singleton
+        let renderTag _ (view: View<Tag*int>)= 
+            let tagView= view |> View.Map (fun (t, _) -> t)
+            let countView= view |> View.Map(fun (_, c) -> c)
+            Templates.TagListRow()
+                .Text(tagView.V.Text)
+                .UsageCount(string countView.V)
+                //.Delete(fun _ -> dispatch (Delete state.V.Id))
+                .Doc()
+        let idOf (tag, _)= tag.Id
+        let tags= (V (state.V.Tags)).DocSeqCached(idOf, renderTag) |> Seq.singleton
         Templates.TagList()
             .Body(tags)
             .Refresh(fun _ -> dispatch Refresh)
