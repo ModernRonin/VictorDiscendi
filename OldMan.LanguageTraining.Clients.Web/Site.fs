@@ -27,10 +27,13 @@ let init()=
 
 [<NamedUnionCases "type">]
 type Message =
-    | Nil
+    | TagListMessage of TagList.Message
 
 let update msg (state: State) : Action<Message, State> =
     match msg with
+    | TagListMessage m -> 
+        let updatedTagList= TagList.update m state.TagList
+        SetModel {state with TagList=updatedTagList}
     | _ -> DoNothing 
 
 
@@ -41,7 +44,12 @@ let pageFor (state: State)=
         match state.Screen with
         | WelcomeScreen -> dataless (fun () -> Templates.Welcome().Doc())
         | OtherScreen -> dataless (fun () -> Templates.Other().Doc())
-        | TagListScreen -> Page.Single(fun (dispatch: Dispatch<Message>) (state: View<State>) -> TagList.render ignore (V state.V.TagList))
+        | TagListScreen -> 
+            Page.Single(fun (dispatch: Dispatch<Message>) (state: View<State>) -> 
+                let subDispatch msg = 
+                    dispatch (TagListMessage msg)
+                TagList.render subDispatch (V state.V.TagList)
+            )
 
     pageCreator()
 

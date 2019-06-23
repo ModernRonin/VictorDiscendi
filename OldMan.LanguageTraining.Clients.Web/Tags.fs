@@ -50,6 +50,7 @@ module TagList=
             Tags: Tag.State list
         }
     let refresh()= 
+        WebSharper.JavaScript.Console.Log ("refreshing taglist...")
         {
             Tags= Api.service().ListTags() |> List.map Tag.fromDomain
         }
@@ -71,6 +72,6 @@ module TagList=
 
     let render (dispatch: Message Dispatch) (state: View<State>)=
         let tags= (V (state.V.Tags)).DocSeqCached(Tag.idOf, fun id t -> Tag.render ignore t) |> Seq.singleton
-        Templates.TagList().Body(tags).Doc()
+        Templates.TagList().Body(tags).Refresh(fun _ -> dispatch Refresh).Doc()
 
 

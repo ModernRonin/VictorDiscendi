@@ -39,10 +39,13 @@
         </thead>
         <tbody ws-hole="Body">
         <tr ws-template="Row">
-            <td><b>${Text}</b></td><td>(${UsageCount})</td>
+            <td><b>${Text}</b></td>
+            <td>(${UsageCount})</td>
+            <td><button ws-onclick="Delete" ws-attr="DeleteAttributes">Delete</button></td>
         </tr>
         </tbody>
     </table>
+    <button ws-onclick="Refresh" ws-attr="RefreshAttributes">Refresh</button>
 </div>
 
 <script type="text/javascript" src="Content/OldMan.LanguageTraining.Clients.Web.js"></script>
