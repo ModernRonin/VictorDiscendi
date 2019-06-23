@@ -16,23 +16,23 @@ type Screen=
 type State=
     {
         Screen : Screen
-        TagList: TagList.State
+        TagList: Tags.State
     }
 
 let init()= 
     {
         Screen= WelcomeScreen
-        TagList= TagList.init()
+        TagList= Tags.init()
     }
 
 [<NamedUnionCases "type">]
 type Message =
-    | TagListMessage of TagList.Message
+    | TagListMessage of Tags.Message
 
 let update msg (state: State) : Action<Message, State> =
     match msg with
     | TagListMessage m -> 
-        let updatedTagList= TagList.update m state.TagList
+        let updatedTagList= Tags.update m state.TagList
         SetModel {state with TagList=updatedTagList}
     | _ -> DoNothing 
 
@@ -49,7 +49,7 @@ let pageFor (state: State)=
         match state.Screen with
         | WelcomeScreen -> dataless (fun () -> Templates.Welcome().Doc())
         | OtherScreen -> dataless (fun () -> Templates.Other().Doc())
-        | TagListScreen -> delegateToComponent TagList.render (fun s -> s.TagList) (fun msg -> (TagListMessage msg))
+        | TagListScreen -> delegateToComponent Tags.render (fun s -> s.TagList) (fun msg -> (TagListMessage msg))
 
     pageCreator()
 
@@ -58,4 +58,4 @@ let goto (screen: Screen) (state: State) : State =
     | WelcomeScreen 
     | OtherScreen -> {state with Screen=screen}
     | TagListScreen -> 
-        {state with Screen=screen; TagList= TagList.refresh()}
+        {state with Screen=screen; TagList= Tags.refresh()}
