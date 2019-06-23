@@ -1,3 +1,14 @@
+------------NEXT QUESTIONS------------
+integrate dummy service
+edit a tag (forms, UI changes to data (is that what reactive vars are for?))
+
+maybe just implement the whole thing in pure html, and only afterwards move to CSS
+setup bulma
+
+eventually swap out dummy service for the real one, injecting a localstorage based IPersistence implementation
+
+
+------------INITIAL THOUGHTS------------
 interactions:
 editing
     add word pair
@@ -43,20 +54,6 @@ statistics:
     over time
 
 
-platforms, order:
-    1..console 
-        edit
-        learn
-    2. android
-        learn
-    3. wpf:
-        edit
-        learn
-    4. android: add words
-    5. wpf: stats
-    6. android: edit
-    7. android: stats
-
 cross-cutting:
     persistence
     some sort of data sync, serverless because we don't wanna pay for a server, or maybe azure blob storage
@@ -75,7 +72,6 @@ persisted data structure:
 	databasey from the start, so if we ever want to move from files to an SQL backstore, it'll be easy
 		
 		
-
 data entry:
 	prevent double entries
 	warn about conflicts/synonyms
