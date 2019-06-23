@@ -1,6 +1,8 @@
 ------------NEXT QUESTIONS------------
-integrate dummy service
-	4. add loading delay and disable refresh button while refreshing is underway
+swap out dummy service for the real one, 
+	injecting a localstorage based IPersistence implementation	
+switch to async for persistence
+add loading delay and disable refresh button while refreshing is underway
 
 edit a tag (forms, UI changes to data (is that what reactive vars are for?))
 
@@ -9,7 +11,6 @@ find out whether there is a more flexible/custom way to map url endpoints than t
 maybe just implement the whole thing in pure html, and only afterwards move to CSS
 setup bulma
 
-eventually swap out dummy service for the real one, injecting a localstorage based IPersistence implementation
 eventually do away with all references to languages and words because this could be just as well anatomy questions
 eventually allow to create multiple "databases"/sets, eg "English-German", "Anatomy" etc.
 
