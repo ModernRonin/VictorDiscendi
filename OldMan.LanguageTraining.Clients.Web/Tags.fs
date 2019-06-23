@@ -6,6 +6,7 @@ open WebSharper.UI.Client
 open WebSharper.Mvu
 
 open OldMan.LanguageTraining.Domain
+type DomainTag= OldMan.LanguageTraining.Domain.Tag
 
 module Tag=
     type State= 
@@ -16,6 +17,21 @@ module Tag=
         }
 
     let idOf state= state.Id
+
+    let empty()= 
+        {
+            Id= Id.uninitialized
+            Text= ""
+            UsageCount= 0 
+        }
+
+    let fromDomain ((tag: DomainTag), usageCount)= 
+        {
+            Id= tag.Id
+            Text= tag.Text
+            UsageCount= usageCount
+        }
+
 
     //[<NamedUnionCases "type">]
     type Message = 

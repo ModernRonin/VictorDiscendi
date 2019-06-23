@@ -1,5 +1,9 @@
 ------------NEXT QUESTIONS------------
 integrate dummy service
+	1. just use it in init()
+	2. add a refresh msg and button
+	3. trigger refresh msg instead of directly quering in init()
+
 edit a tag (forms, UI changes to data (is that what reactive vars are for?))
 
 find out whether there is a more flexible/custom way to map url endpoints than the attributes on the pages and router.infer
