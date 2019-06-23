@@ -17,7 +17,7 @@ module Tag=
 
     let idOf model= model.Id
 
-    [<NamedUnionCases "type">]
+    //[<NamedUnionCases "type">]
     type Message = 
         | Nil
 
@@ -33,7 +33,7 @@ module TagList=
             Tags: Tag.Model list
         }
 
-    [<NamedUnionCases "type">]
+    //[<NamedUnionCases "type">]
     type Message = 
         | Nil
 
