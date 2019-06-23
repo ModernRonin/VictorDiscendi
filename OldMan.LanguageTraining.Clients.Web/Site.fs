@@ -45,7 +45,6 @@ let pageFor (state: State)=
             let subDispatch msg = dispatch (transformer msg)
             renderer subDispatch (V (stateExtractor state.V))
         )
-        
     let pageCreator= 
         match state.Screen with
         | WelcomeScreen -> dataless (fun () -> Templates.Welcome().Doc())
@@ -58,4 +57,5 @@ let goto (screen: Screen) (state: State) : State =
     match screen with
     | WelcomeScreen 
     | OtherScreen -> {state with Screen=screen}
-    | TagListScreen -> {state with Screen=screen; TagList= TagList.init()}
+    | TagListScreen -> 
+        {state with Screen=screen; TagList= TagList.refresh()}

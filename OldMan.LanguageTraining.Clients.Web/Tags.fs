@@ -63,7 +63,10 @@ module TagList=
         | Refresh
         | Delete of Id
 
-    let init()= refresh()
+    let init()= 
+        {
+            Tags= []
+        }
 
     let update msg state=
         match msg with
