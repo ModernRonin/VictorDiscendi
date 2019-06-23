@@ -1,6 +1,15 @@
 ------------NEXT QUESTIONS------------
 integrate dummy service
 	1. just use it in init()
+		problem: remoteDev and localstorage don't like this because they can't serialize it
+		a) get it serialized by providing custom serializer that ignores interfaces and also removes
+		   the unpleasant requirement of putting the NamedUnionCases("type") attribute everywhere
+		b) somehow get an additional function into update and init, and use that to access IService
+			might be doable with 
+			let makeUpdate someFunc=
+				let update msg state =...
+				update
+
 	2. add a refresh msg and button
 	3. trigger refresh msg instead of directly quering in init()
 
