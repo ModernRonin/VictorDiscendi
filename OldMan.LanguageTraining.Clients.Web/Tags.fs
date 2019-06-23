@@ -53,15 +53,21 @@ module TagList=
         {
             Tags= Api.service().ListTags() |> List.map Tag.fromDomain
         }
+    let delete id state=
+        let without= state.Tags |> List.filter (fun t -> t.Id<>id)
+        { state with Tags=without }
 
     [<NamedUnionCases "type">]
     type Message = 
-        | Nil
+        | Refresh
+        | Delete of Id
 
     let init()= refresh()
 
     let update msg state=
-        state
+        match msg with
+        | Refresh -> refresh()
+        | Delete id -> delete id state
 
     let render (dispatch: Message Dispatch) (state: View<State>)=
         let tags= (V (state.V.Tags)).DocSeqCached(Tag.idOf, fun id t -> Tag.render ignore t) |> Seq.singleton
