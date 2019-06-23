@@ -2,6 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <WebSharperSourceMap Condition=" '$(Configuration)' == 'Debug' ">True</WebSharperSourceMap>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Id.fs" />
