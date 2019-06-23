@@ -1,10 +1,10 @@
-﻿module OldMan.LanguageTraining.Dummy
+﻿module OldMan.LanguageTraining.Clients.Api
 
 open System
 open OldMan.LanguageTraining
 open OldMan.LanguageTraining.Domain
 
-type Service()=
+type private Service()=
     let pair english german tags= 
         WordPair.create (Word english, Word german, tags |> List.map Tag.create)
     let mutable pairs= 
@@ -80,3 +80,6 @@ type Service()=
             pairs <- updated :: withoutOld
     
 
+let mutable private _service= (new Service()) :> IService
+
+let service()= _service

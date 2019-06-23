@@ -5,6 +5,7 @@ open WebSharper.UI
 open WebSharper.UI.Client
 open WebSharper.Mvu
 
+open OldMan.LanguageTraining.Clients
 open OldMan.LanguageTraining.Domain
 type DomainTag= OldMan.LanguageTraining.Domain.Tag
 
@@ -33,7 +34,7 @@ module Tag=
         }
 
 
-    //[<NamedUnionCases "type">]
+    [<NamedUnionCases "type">]
     type Message = 
         | Nil
 
@@ -48,31 +49,16 @@ module TagList=
         {
             Tags: Tag.State list
         }
+    let refresh()= 
+        {
+            Tags= Api.service().ListTags() |> List.map Tag.fromDomain
+        }
 
-    //[<NamedUnionCases "type">]
+    [<NamedUnionCases "type">]
     type Message = 
         | Nil
 
-    let init()=
-        {
-            Tags= [
-                    {
-                        Id= Id.wrap 1L
-                        Text="alpha"
-                        UsageCount=13
-                    }
-                    {
-                        Id= Id.wrap 2L
-                        Text="bravo"
-                        UsageCount=17
-                    }
-                    {
-                        Id= Id.wrap 3L
-                        Text="charlie"
-                        UsageCount=19
-                    }
-                ]
-        }
+    let init()= refresh()
 
     let update msg state=
         state

@@ -25,7 +25,7 @@ let init()=
         TagList= TagList.init()
     }
 
-//[<NamedUnionCases "type">]
+[<NamedUnionCases "type">]
 type Message =
     | Nil
 
