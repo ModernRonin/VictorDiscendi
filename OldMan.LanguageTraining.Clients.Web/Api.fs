@@ -5,8 +5,25 @@ open OldMan.LanguageTraining
 open OldMan.LanguageTraining.Domain
 
 type private Service()=
+    let mutable nextId= 1L
+    let makeId()=
+        let result= nextId
+        nextId <- result + 1L
+        result |> Id.wrap
+    let mutable tags= List.empty<Tag>
+    let makeTag text = 
+        match tags |> List.tryFind (fun t -> t.Text=text) with
+        | Some t -> t
+        | None ->
+            let nu=
+                {
+                    Text= text
+                    Id= makeId()
+                }
+            tags <- nu :: tags
+            nu
     let pair english german tags= 
-        WordPair.create (Word english, Word german, tags |> List.map Tag.create)
+        { WordPair.create (Word english, Word german, tags |> List.map makeTag) with Id= makeId() }
     let mutable pairs= 
         [
             pair "apple" "Apfel" ["noun"; "fruit"]
