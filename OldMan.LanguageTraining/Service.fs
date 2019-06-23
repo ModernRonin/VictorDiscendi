@@ -8,6 +8,7 @@ type IService=
     abstract member updateWordPair: Id * (Word*Word*Tag list) -> unit
     abstract member listWordPairsForTags: (TagCondition) -> WordPair list
     abstract member listTags: (unit) -> (Tag*int) list
+    abstract member addOrUpdateTag: (Tag) -> Tag
     abstract member updateLanguageNames: (LanguageConfiguration) -> unit
     abstract member getLanguageNames: (unit) -> LanguageConfiguration
     abstract member generateQuestion: (QuizSettings) -> WordReference*Question
@@ -29,6 +30,8 @@ type Service(persistence: IPersistence)=
             let count tag= pairs |> List.filter (fun p -> p.Tags |> List.contains tag) |> List.length
             pairs |> List.collect (fun p -> p.Tags) |> List.distinct |> List.map (fun t -> (t, (count t)))
 
+        member this.addOrUpdateTag(tag)= persistence.AddOrUpdateTag tag
+            
         member this.generateQuestion(settings)= persistence.GetPairs() |> Question.create <| settings
 
         member this.scoreQuestionResult (result: WordReference*Question*QuestionResult)=

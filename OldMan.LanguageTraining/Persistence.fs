@@ -9,5 +9,5 @@ type IPersistence=
     abstract member UpdatePair: WordPair -> unit
     abstract member GetPairs: unit -> WordPair list
     abstract member GetTags: unit -> Tag list
-    abstract member AddOrUpdateTag: Tag -> unit
+    abstract member AddOrUpdateTag: Tag -> Tag
 

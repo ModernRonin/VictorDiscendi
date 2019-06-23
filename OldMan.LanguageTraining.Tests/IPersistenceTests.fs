@@ -164,15 +164,26 @@ module IPersistence=
         tags |> List.map (fun t -> t.Id) |> hasOnlyUniqueValues |> shouldEqual true
         
     [<Test>]
-    let ``AddOrUpdateTag() adds it if it doe not yet exist``()=
+    let ``AddOrUpdateTag() adds it if it does not yet exist``()=
         let persistence= createWithEmptyBackStore()
-        persistence.AddOrUpdateTag (Tag.create "alpha")
+        persistence.AddOrUpdateTag (Tag.create "alpha") |> ignore
         persistence.GetTags() |> shouldContain {Id=Id.wrap 1L; Text="alpha"}
+      
+    [<Test>]
+    let ``AddOrUpdateTag() returns the newly created tag if it does not yet exist``()=
+        let persistence= createWithEmptyBackStore()
+        persistence.AddOrUpdateTag (Tag.create "alpha") |> shouldEqual {Id= Id.wrap 1L; Text="alpha"}
       
     [<Test>]
     let ``AddOrUpdateTag() updates if the tag already exists``()=
         let persistence= createWithEmptyBackStore()
-        persistence.AddOrUpdateTag (Tag.create "alpha")
-        persistence.AddOrUpdateTag {Id= Id.wrap 1L; Text="bravo"}
+        persistence.AddOrUpdateTag (Tag.create "alpha") |> ignore
+        persistence.AddOrUpdateTag {Id= Id.wrap 1L; Text="bravo"}  |> ignore
         persistence.GetTags() |> shouldContain {Id= Id.wrap 1L; Text="bravo"}
+
+    [<Test>]
+    let ``AddOrUpdateTag() returns the tag if it already exists``()=
+        let persistence= createWithEmptyBackStore()
+        persistence.AddOrUpdateTag (Tag.create "alpha") |> ignore
+        persistence.AddOrUpdateTag {Id= Id.wrap 1L; Text="bravo"} |> shouldEqual {Id= Id.wrap 1L; Text="bravo"}
 

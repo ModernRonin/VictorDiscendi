@@ -204,11 +204,14 @@ type CsvPersistence(loader: Loader, saver: Saver)=
             let add()=
                 let existing= loadTags() 
                 let id= Id.nextAfter existing
-                {newTag with Id= id}.Serialize() :: existing |> saveTags
+                let result= {newTag with Id= id}
+                result.Serialize() :: existing |> saveTags
+                result
             let update()= 
                 let serialized= newTag.Serialize()
                 let others= loadTags() |> List.filter (fun t -> t.Id<>serialized.Id)
                 serialized :: others |> saveTags
+                newTag
             
             if newTag.Id=Id.uninitialized then add() else update()
 

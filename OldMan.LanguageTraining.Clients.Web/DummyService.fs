@@ -50,6 +50,9 @@ type Service()=
             let count tag= pairs |> List.filter (fun p -> p.Tags |> List.contains tag) |> List.length
             pairs |> List.collect(fun p -> p.Tags) |> List.distinct |> List.map (fun t -> (t, (count t)))
 
+        member this.addOrUpdateTag(tag)=
+            tag
+
         member this.generateQuestion(settings)= 
             match settings.Type with
                 | FreeEntry -> 
