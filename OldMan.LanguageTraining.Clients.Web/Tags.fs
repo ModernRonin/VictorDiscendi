@@ -36,13 +36,17 @@ module Tag=
 
     [<NamedUnionCases "type">]
     type Message = 
-        | Nil
+        | Delete of Id
 
     let update msg state=
         state
 
     let render (dispatch: Message Dispatch) (state: View<State>)=
-        Templates.TagListRow().Text(state.V.Text).UsageCount(string state.V.UsageCount).Doc()
+        Templates.TagListRow()
+            .Text(state.V.Text)
+            .UsageCount(string state.V.UsageCount)
+            .Delete(fun _ -> dispatch (Delete state.V.Id))
+            .Doc()
 
 module TagList=
     type State= 
@@ -75,6 +79,9 @@ module TagList=
 
     let render (dispatch: Message Dispatch) (state: View<State>)=
         let tags= (V (state.V.Tags)).DocSeqCached(Tag.idOf, fun id t -> Tag.render ignore t) |> Seq.singleton
-        Templates.TagList().Body(tags).Refresh(fun _ -> dispatch Refresh).Doc()
+        Templates.TagList()
+            .Body(tags)
+            .Refresh(fun _ -> dispatch Refresh)
+            .Doc()
 
 
