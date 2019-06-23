@@ -40,16 +40,17 @@ let update msg (state: State) : Action<Message, State> =
 
 let pageFor (state: State)=
     let dataless docCreator= Page.Single(fun _ _ -> docCreator())
+    let delegateToComponent renderer stateExtractor transformer=
+        Page.Single(fun (dispatch: Dispatch<Message>) (state: View<State>) -> 
+            let subDispatch msg = dispatch (transformer msg)
+            renderer subDispatch (V (stateExtractor state.V))
+        )
+        
     let pageCreator= 
         match state.Screen with
         | WelcomeScreen -> dataless (fun () -> Templates.Welcome().Doc())
         | OtherScreen -> dataless (fun () -> Templates.Other().Doc())
-        | TagListScreen -> 
-            Page.Single(fun (dispatch: Dispatch<Message>) (state: View<State>) -> 
-                let subDispatch msg = 
-                    dispatch (TagListMessage msg)
-                TagList.render subDispatch (V state.V.TagList)
-            )
+        | TagListScreen -> delegateToComponent TagList.render (fun s -> s.TagList) (fun msg -> (TagListMessage msg))
 
     pageCreator()
 
