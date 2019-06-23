@@ -2,6 +2,8 @@
 integrate dummy service
 edit a tag (forms, UI changes to data (is that what reactive vars are for?))
 
+find out whether there is a more flexible/custom way to map url endpoints than the attributes on the pages and router.infer
+
 maybe just implement the whole thing in pure html, and only afterwards move to CSS
 setup bulma
 
