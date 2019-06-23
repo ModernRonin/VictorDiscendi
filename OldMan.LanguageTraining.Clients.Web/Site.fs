@@ -34,18 +34,15 @@ let update msg (model: State) : Action<Message, State> =
     | _ -> DoNothing 
 
 
-let tagListPage= Page.Single(fun (dispatch: Dispatch<Message>) (state: View<State>) ->
-    TagList.render ignore (V state.V.TagList)
-)
 
 let pageFor (state: State)=
-    let dataless docCreator= Page.Single(fun _ _ -> docCreator())()
-    
-    match state.Screen with
+    let dataless docCreator= Page.Single(fun _ _ -> docCreator())
+    let pageCreator= match state.Screen with
     | WelcomeScreen -> dataless (fun () -> Templates.Welcome().Doc())
     | OtherScreen -> dataless (fun () -> Templates.Other().Doc())
-    | TagListScreen -> tagListPage()
+    | TagListScreen -> Page.Single(fun (dispatch: Dispatch<Message>) (state: View<State>) -> TagList.render ignore (V state.V.TagList))
 
+    pageCreator()
 
 let goto (screen: Screen) (state: State) : State =
     match screen with
