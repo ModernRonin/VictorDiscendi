@@ -27,33 +27,33 @@ type Service()=
             }
         ]
     interface IService with
-        member this.updateLanguageNames(configuration)= ()
+        member this.UpdateLanguageNames(configuration)= ()
 
-        member this.getLanguageNames()= {LeftLanguageName="English"; RightLanguageName="German"}
+        member this.GetLanguageNames()= {LeftLanguageName="English"; RightLanguageName="German"}
 
-        member this.listWordPairs()= pairs
+        member this.ListWordPairs()= pairs
 
-        member this.listWordPairsForTags condition= 
+        member this.ListWordPairsForTags condition= 
             pairs |> TagCondition.filter condition
 
-        member this.addWordPair(definition)=
+        member this.AddWordPair(definition)=
             let result= definition |> WordPair.create
             pairs <- result :: pairs
             result
 
-        member this.updateWordPair (id,definition)=
+        member this.UpdateWordPair (id,definition)=
             let withoutOld= pairs |> List.filter (fun p -> p.Id<>id)
             let updated= {(definition |> WordPair.create) with Id=id}
             pairs <- updated :: withoutOld
 
-        member this.listTags()= 
+        member this.ListTags()= 
             let count tag= pairs |> List.filter (fun p -> p.Tags |> List.contains tag) |> List.length
             pairs |> List.collect(fun p -> p.Tags) |> List.distinct |> List.map (fun t -> (t, (count t)))
 
-        member this.addOrUpdateTag(tag)=
+        member this.AddOrUpdateTag(tag)=
             tag
 
-        member this.generateQuestion(settings)= 
+        member this.GenerateQuestion(settings)= 
             match settings.Type with
                 | FreeEntry -> 
                     (
@@ -70,7 +70,7 @@ type Service()=
                                                }
                     )                    
 
-        member this.scoreQuestionResult (({PairId= pairId}, _, result) :WordReference*Question*QuestionResult)=
+        member this.ScoreQuestionResult (({PairId= pairId}, _, result) :WordReference*Question*QuestionResult)=
             let target= pairs |> List.find (fun p -> p.Id=pairId)
             let delta= match result with 
                         | Correct -> 1

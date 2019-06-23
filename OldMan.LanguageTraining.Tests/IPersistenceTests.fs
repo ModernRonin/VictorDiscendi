@@ -145,7 +145,7 @@ module IPersistence=
         persistence.GetTags() |> shouldBeEmpty
         
     [<Test>]
-    let ``getTags returns all distinct tags in all added pairs``()=
+    let ``GetTags returns all distinct tags in all added pairs``()=
         let persistence= createWithEmptyBackStore()
         let add= WordPair.create >> persistence.AddPair >> ignore
         let getTag text= persistence.GetTags() |> List.filter (fun t -> t.Text=text) |> List.head

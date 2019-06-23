@@ -8,7 +8,8 @@ maybe just implement the whole thing in pure html, and only afterwards move to C
 setup bulma
 
 eventually swap out dummy service for the real one, injecting a localstorage based IPersistence implementation
-
+eventually do away with all references to languages and words because this could be just as well anatomy questions
+eventually allow to create multiple "databases"/sets, eg "English-German", "Anatomy" etc.
 
 ------------INITIAL THOUGHTS------------
 interactions:

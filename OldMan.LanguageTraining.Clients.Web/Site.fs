@@ -37,7 +37,8 @@ let update msg (state: State) : Action<Message, State> =
 
 let pageFor (state: State)=
     let dataless docCreator= Page.Single(fun _ _ -> docCreator())
-    let pageCreator= match state.Screen with
+    let pageCreator= 
+        match state.Screen with
         | WelcomeScreen -> dataless (fun () -> Templates.Welcome().Doc())
         | OtherScreen -> dataless (fun () -> Templates.Other().Doc())
         | TagListScreen -> Page.Single(fun (dispatch: Dispatch<Message>) (state: View<State>) -> TagList.render ignore (V state.V.TagList))
