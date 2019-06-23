@@ -8,29 +8,29 @@ open WebSharper.Mvu
 open OldMan.LanguageTraining.Domain
 
 module Tag=
-    type Model= 
+    type State= 
         {
             Id: Id
             Text: string
             UsageCount: int
         }
 
-    let idOf model= model.Id
+    let idOf state= state.Id
 
     //[<NamedUnionCases "type">]
     type Message = 
         | Nil
 
-    let update msg model=
-        model
+    let update msg state=
+        state
 
-    let render (dispatch: Message Dispatch) (state: View<Model>)=
+    let render (dispatch: Message Dispatch) (state: View<State>)=
         Templates.TagListRow().Text(state.V.Text).UsageCount(string state.V.UsageCount).Doc()
 
 module TagList=
     type State= 
         {
-            Tags: Tag.Model list
+            Tags: Tag.State list
         }
 
     //[<NamedUnionCases "type">]
@@ -58,8 +58,8 @@ module TagList=
                 ]
         }
 
-    let update msg model=
-        model
+    let update msg state=
+        state
 
     let render (dispatch: Message Dispatch) (state: View<State>)=
         let tags= (V (state.V.Tags)).DocSeqCached(Tag.idOf, fun id t -> Tag.render ignore t) |> Seq.singleton

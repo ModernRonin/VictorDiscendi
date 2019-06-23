@@ -29,7 +29,7 @@ let init()=
 type Message =
     | Nil
 
-let update msg (model: State) : Action<Message, State> =
+let update msg (state: State) : Action<Message, State> =
     match msg with
     | _ -> DoNothing 
 
