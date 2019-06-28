@@ -1,6 +1,6 @@
-namespace OldMan.LanguageTraining.Tests.Persistence
-module CsvPersistence=
+namespace OldMan.LanguageTraining.Tests
 
+module ``Persistence with CsvPersistenceStore``=
     open System
     open NUnit.Framework
     open FsUnitTyped
@@ -23,7 +23,8 @@ module CsvPersistence=
     let create loadResults =
         let loader= loader loadResults
         saveCalls <- Map.empty
-        (new CsvPersistence(loader, save)) :> IPersistence
+        let store= new CsvPersistenceStore(loader, save)
+        new Persistence(store)
 
    
     [<Test>]

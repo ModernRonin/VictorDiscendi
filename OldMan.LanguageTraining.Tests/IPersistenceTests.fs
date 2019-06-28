@@ -1,14 +1,16 @@
 ﻿(*
-    These tests should be true for any type implementing IPersistence.
+    These tests should be true for any type implementing IPersistenceStore.
     If at some point we get another implementation, we will need to figure 
     out a way to parameterize this test suite to the implementation type.
 *)
 
-namespace OldMan.LanguageTraining.Tests.Persistence
+namespace OldMan.LanguageTraining.Tests
+
 module Setup=
     open System
-    open OldMan.LanguageTraining.Persistence
+    open OldMan.LanguageTraining
     open OldMan.LanguageTraining.Domain
+    open OldMan.LanguageTraining.Persistence
 
     open FsCheck
 
@@ -18,8 +20,9 @@ module Setup=
         member this.Save kind what= data <- data.Add (kind, what)
 
     let createWithEmptyBackStore()= 
-        let backStore= new BackStore()
-        (new CsvPersistence(backStore.Load, backStore.Save)) :> OldMan.LanguageTraining.IPersistence
+        let storage= new BackStore()
+        let store= new CsvPersistenceStore(storage.Load, storage.Save) 
+        new Persistence(store)
 
     let stringGenerator= 
         Arb.Default.Char().Generator |> 
@@ -48,7 +51,7 @@ open Setup
 type FsProperty= FsCheck.Xunit.PropertyAttribute
 
 [<Properties(Arbitrary= [| typeof<Generators> |])>]
-module IPersistence=
+module ``General Persistence Properties``=
     let hasOnlyUniqueValues l = l |> Seq.groupBy id |> Seq.forall (fun (_, l) -> (Array.ofSeq l).Length=1)
 
     [<FsProperty>]

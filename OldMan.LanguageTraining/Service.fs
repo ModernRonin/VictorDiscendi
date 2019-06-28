@@ -14,7 +14,9 @@ type IService=
     abstract member GenerateQuestion: (QuizSettings) -> WordReference*Question
     abstract member ScoreQuestionResult: (WordReference*Question*QuestionResult) -> unit
 
-type Service(persistence: IPersistence)=
+type Service(store: IPersistenceStore)=
+    let persistence= new Persistence(store)
+
     interface IService with
         member this.UpdateLanguageNames(configuration)= persistence.UpdateConfiguration(configuration)
         member this.GetLanguageNames()= persistence.GetConfiguration()
