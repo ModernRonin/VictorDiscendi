@@ -1,107 +1,76 @@
 ﻿module OldMan.LanguageTraining.Persistence
 
-open System
-open System.Globalization
 open FSharp.Data
 open OldMan.LanguageTraining
 open OldMan.LanguageTraining.Domain
 
 // CSV Types:
-type private PersistentConfiguration = 
+type private CsvConfiguration = 
     CsvProvider<
         Schema = "LeftLanguageName (string), RightLanguageName (string)",
         HasHeaders=false
         >
+module private CsvConfiguration=
+    let toSerializable (csv: CsvConfiguration.Row)= 
+        {
+            LeftName= csv.LeftLanguageName
+            RightName= csv.RightLanguageName
+        }
+    let fromSerializable (ser: SerializableConfiguration)= 
+        CsvConfiguration.Row(ser.LeftName, ser.RightName)
 
-type private PersistentPair= 
+type private CsvPair= 
     CsvProvider<
         Schema = "Id (int64), Left (string), Right (string), Created (string), LastAsked (string), TimesAsked (int64), LeftScore (int), RightScore (int)",
         HasHeaders=false
         >
+module private CsvPair=
+    let toSerializable (csv: CsvPair.Row)=
+        {
+            Id= csv.Id
+            Left= csv.Left
+            Right= csv.Right
+            Created= csv.Created
+            LastAsked= csv.LastAsked
+            TimesAsked= csv.TimesAsked
+            LeftScore= csv.LeftScore
+            RightScore= csv.RightScore
+        }
+    let fromSerializable (ser: SerializablePair)=
+        CsvPair.Row(ser.Id, ser.Left, ser.Right, ser.Created, ser.LastAsked, ser.TimesAsked, ser.LeftScore, ser.RightScore)
 
-type private PersistentTag= 
+type private CsvTag= 
     CsvProvider<
         Schema = "Id (int64), Tag (string)",
         HasHeaders=false
         >
+module private CsvTag=
+    let toSerializable (csv: CsvTag.Row): SerializableTag=
+        {
+            Id= csv.Id
+            Text= csv.Tag
+        }
+    let fromSerializable (ser: SerializableTag)=
+        CsvTag.Row(ser.Id, ser.Text)
 
-type private PersistentTagPairAssociation=
+
+type private CsvTagPairAssociation=
     CsvProvider<
         Schema = "TagId (int64), PairId (int64)",
         HasHeaders=false
         >
 
-// serialization extensions
-type private Count with
-    member this.Serialize()= 
-        match this with
-        | Count x -> int64 x
-
-    static member Deserialize (from: int64)=
-        match from with 
-        | x when int64 0<=x -> Count(uint32 x)
-        | _ -> raise  (ArgumentOutOfRangeException ("count"))
-
-type private Score with 
-    member this.Serialize()=
-        match this with 
-        | Score x -> x
-    static member Deserialize (from: int)= Score from
-
-type private Id with 
-    member this.Serialize()= 
-        match this with 
-        | Id x -> x
-    static member Deserialize (from: int64)= Id from
-    member this.AddDelta (delta: int)= Id.Deserialize (this.Serialize() + int64 delta)
-
-type private Word with
-    member this.Serialize()=
-        match this with
-        | Word x -> x
-    static member Deserialize (from: string)= Word from
-
-let private timeFormat= "yyyyMMddHHmmss"
-type private DateTime with
-    member this.Serialize()= this.ToString(timeFormat, CultureInfo.InvariantCulture)
-    static member Deserialize (from: string)= DateTime.ParseExact(from, timeFormat, CultureInfo.InvariantCulture)
-
-type private LanguageConfiguration with
-    member this.Serialize()= PersistentConfiguration.Row (this.LeftLanguageName, this.RightLanguageName)
-    static member Deserialize (from: PersistentConfiguration.Row)= {LeftLanguageName= from.LeftLanguageName; RightLanguageName= from.RightLanguageName}
-
-type private WordPair with 
-    member this.Serialize() = 
-        PersistentPair.Row( this.Id.Serialize(), 
-                            this.Left.Serialize(), 
-                            this.Right.Serialize(), 
-                            this.Created.Serialize(), 
-                            this.ScoreCard.LastAsked.Serialize(), 
-                            this.ScoreCard.TimesAsked.Serialize(),
-                            this.ScoreCard.LeftScore.Serialize(), 
-                            this.ScoreCard.RightScore.Serialize())
-
-    static member Deserialize tagsLoader (pair: PersistentPair.Row) =
+module private CsvTagPairAssociation=
+    let toSerializable (csv: CsvTagPairAssociation.Row)=
         {
-            Id = pair.Id |> Id.Deserialize
-            Left= pair.Left |> Word.Deserialize
-            Right= pair.Right |> Word.Deserialize
-            Created = pair.Created |> DateTime.Deserialize
-            Tags = tagsLoader pair.Id
-            ScoreCard= 
-                {
-                    LastAsked=  pair.LastAsked |> DateTime.Deserialize
-                    TimesAsked= pair.TimesAsked |> Count.Deserialize
-                    LeftScore= pair.LeftScore |> Score.Deserialize
-                    RightScore= pair.RightScore |> Score.Deserialize
-                }
+            TagId= csv.TagId
+            PairId= csv.PairId
         }
+    let fromSerializable (ser: SerializableTagPairAssociation)=
+        CsvTagPairAssociation.Row(ser.TagId, ser.PairId)
 
-type private Tag with
-    member this.Serialize() = PersistentTag.Row(this.Id.Serialize(), this.Text)
-    static member Deserialize (from: PersistentTag.Row) = {Id= from.Id |> Id.Deserialize; Text= from.Tag}
+// serialization extensions
 
-let private serializePairTagAssociation pairId tagId= PersistentTagPairAssociation.Row (tagId, pairId)
 
 
 
@@ -114,41 +83,65 @@ type DataKind=
 type Loader= DataKind -> string
 type Saver= DataKind -> string -> unit
 
-type CsvPersistence(loader: Loader, saver: Saver)=
+
+type CsvPersistenceStore(loader: Loader, saver: Saver)=
     let safeParse parse str= 
         match str with
         | null 
         | "" -> Array.empty
         | _ -> parse str
 
-    let loadPairs()= Words |> loader |> safeParse PersistentPair.ParseRows |> List.ofArray
-    let loadTags()= Tagging |> loader |> safeParse PersistentTag.ParseRows |> List.ofArray
-    let loadAssociations()= WordTagAssociation |> loader |> safeParse PersistentTagPairAssociation.ParseRows |> List.ofArray
-    let saveWords w= ((new PersistentPair(w)).SaveToString()) |> saver Words 
-    let saveTags t= ((new PersistentTag(t)).SaveToString()) |> saver Tagging
-    let saveAssociations a= ((new PersistentTagPairAssociation(a)).SaveToString()) |> saver WordTagAssociation
-    let loadConfig()= 
-        match Configuration |> loader |> safeParse PersistentConfiguration.ParseRows |> List.ofArray with
-        | [] -> PersistentConfiguration.Row("", "")
-        | head::_ -> head
+    interface IPersistenceStore with
+        member this.loadPairs()= Words |> loader |> safeParse CsvPair.ParseRows |> Array.map CsvPair.toSerializable |> List.ofArray
+        member this.loadTags()= Tagging |> loader |> safeParse CsvTag.ParseRows |> Array.map CsvTag.toSerializable |> List.ofArray
+        member this.loadAssociations()= 
+            WordTagAssociation |> loader 
+            |> safeParse CsvTagPairAssociation.ParseRows 
+            |> Array.map CsvTagPairAssociation.toSerializable |> List.ofArray
 
-    let saveConfig c= ((new PersistentConfiguration(c |> Seq.singleton )).SaveToString()) |> saver Configuration
+        member this.savePairs pairs= 
+            let csv= pairs |> List.map CsvPair.fromSerializable
+            (new CsvPair(csv)).SaveToString() |> saver Words 
+
+        member this.saveTags tags= 
+            let csv= tags |> List.map CsvTag.fromSerializable
+            (new CsvTag(csv)).SaveToString() |> saver Tagging
+
+        member this.saveAssociations associations= 
+            let csv= associations |> List.map CsvTagPairAssociation.fromSerializable
+            (new CsvTagPairAssociation(csv)).SaveToString() |> saver WordTagAssociation
+
+        member this.loadConfig()= 
+            match Configuration |> loader |> safeParse CsvConfiguration.ParseRows |> List.ofArray with
+            | [] -> CsvConfiguration.Row("", "")
+            | head::_ -> head
+            |> CsvConfiguration.toSerializable
+
+        member this.saveConfig config= 
+            let csv= config |> CsvConfiguration.fromSerializable |> Seq.singleton 
+            (new CsvConfiguration(csv)).SaveToString() |> saver Configuration
+    
+open Serialization
+
+type CsvPersistence(loader: Loader, saver: Saver)=
+    let store= new CsvPersistenceStore(loader, saver) :> IPersistenceStore
+
 
     let createPair (pair: WordPair)= 
-        let existing= loadPairs()
+        let existing= store.loadPairs()
         let nextId=  Id.nextAfter existing
         let result= {pair with Id=nextId}.Serialize()
         let updated= result |> List.singleton |> List.append existing
-        saveWords updated
+        store.savePairs updated
         result
 
     let editPair (nu: WordPair)=
         let newRecord= nu.Serialize()
-        let existingWithoutOld= loadPairs() |> List.filter (fun p -> p.Id<>nu.Id.Serialize())
-        newRecord :: existingWithoutOld |> saveWords
+        let existingWithoutOld= store.loadPairs() |> List.filter (fun p -> p.Id<>nu.Id.Serialize())
+        newRecord :: existingWithoutOld |> store.savePairs
         
     let getTagIds (tags: Tag list)=
-        let existing= loadTags() 
+        let existing= store.loadTags() 
         let doesNotExistYet (t:Tag) = existing |> List.exists (fun e -> e.Id=t.Id.Serialize()) |> not
         let (newTags, keptTags)= tags |> List.partition doesNotExistYet
         let nextId= Id.nextAfter existing
@@ -156,34 +149,34 @@ type CsvPersistence(loader: Loader, saver: Saver)=
         let newTagsWithIds= newTags |> List.indexed |> List.map assignNextId
         let removed= keptTags |> List.map (fun t -> t.Serialize()) |> List.except <| existing
         let updated= newTagsWithIds |> List.map (fun t -> t.Serialize()) |> List.append existing
-        saveTags updated
+        store.saveTags updated
         updated  |> List.except removed |> List.map Id.fromRaw |> List.map Id.unwrap 
 
     let removeTags tagIds= 
-        let existing= loadTags()
-        let shouldBeKept (t: PersistentTag.Row) = tagIds |> List.contains t.Id |> not
+        let existing= store.loadTags()
+        let shouldBeKept (t: SerializableTag) = tagIds |> List.contains t.Id |> not
         let updated= existing |> List.filter shouldBeKept
-        updated |> saveTags
+        updated |> store.saveTags
 
     let updateAssociations pairId tagIds=
         let nu= tagIds |> List.map (fun tagId -> serializePairTagAssociation pairId tagId)
-        let old= loadAssociations()
+        let old= store.loadAssociations()
         let (oldForPair, toKeep) = old |> List.partition (fun a -> a.PairId=pairId)
-        nu |> List.append <| toKeep |> saveAssociations
+        nu |> List.append <| toKeep |> store.saveAssociations
         let deletedIds= oldForPair |> List.map (fun a -> a.TagId) |> List.except tagIds
         let isNotInUse tagId= toKeep |> List.map (fun a -> a.TagId) |> List.contains tagId |> not
         deletedIds |>  List.filter isNotInUse |> removeTags
 
     let getAssociatedTags pairId=
-        let tagIds= loadAssociations() |> List.filter (fun a -> a.PairId=pairId) |> List.map (fun a -> a.TagId) |> Set.ofList
-        loadTags() |> List.filter (fun t -> tagIds.Contains t.Id) |> List.map Tag.Deserialize
+        let tagIds= store.loadAssociations() |> List.filter (fun a -> a.PairId=pairId) |> List.map (fun a -> a.TagId) |> Set.ofList
+        store.loadTags() |> List.filter (fun t -> tagIds.Contains t.Id) |> List.map Tag.Deserialize
 
     let deserializePair = WordPair.Deserialize getAssociatedTags
 
     interface IPersistence with 
-        member this.UpdateConfiguration config=  config.Serialize() |> saveConfig 
+        member this.UpdateConfiguration config=  config.Serialize() |> store.saveConfig 
         
-        member this.GetConfiguration() =  loadConfig() |> LanguageConfiguration.Deserialize
+        member this.GetConfiguration() =  store.loadConfig() |> LanguageConfiguration.Deserialize
 
         member this.AddPair pair = 
             let result= createPair pair
@@ -196,21 +189,21 @@ type CsvPersistence(loader: Loader, saver: Saver)=
             let tagIds= getTagIds newPair.Tags
             updateAssociations (newPair.Id.Serialize()) tagIds
   
-        member this.GetPairs() = loadPairs() |> List.map deserializePair
+        member this.GetPairs() = store.loadPairs() |> List.map deserializePair
 
-        member this.GetTags() = loadTags() |> List.map Tag.Deserialize |> List.distinct
+        member this.GetTags() = store.loadTags() |> List.map Tag.Deserialize |> List.distinct
         
         member this.AddOrUpdateTag newTag = 
             let add()=
-                let existing= loadTags() 
+                let existing= store.loadTags() 
                 let id= Id.nextAfter existing
                 let result= {newTag with Id= id}
-                result.Serialize() :: existing |> saveTags
+                result.Serialize() :: existing |> store.saveTags
                 result
             let update()= 
                 let serialized= newTag.Serialize()
-                let others= loadTags() |> List.filter (fun t -> t.Id<>serialized.Id)
-                serialized :: others |> saveTags
+                let others= store.loadTags() |> List.filter (fun t -> t.Id<>serialized.Id)
+                serialized :: others |> store.saveTags
                 newTag
             
             if newTag.Id=Id.uninitialized then add() else update()

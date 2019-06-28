@@ -20,6 +20,7 @@
     <Compile Include="RawQuestion.fs" />
     <Compile Include="Questions.fs" />
     <Compile Include="Scoring.fs" />
+    <Compile Include="PersistenceAbstractions.fs" />
     <Compile Include="Persistence.fs" />
     <Compile Include="Service.fs" />
   </ItemGroup>
