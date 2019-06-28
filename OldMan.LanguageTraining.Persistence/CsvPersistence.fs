@@ -121,7 +121,7 @@ type CsvPersistence(loader: Loader, saver: Saver)=
         | "" -> Array.empty
         | _ -> parse str
 
-    let loadWords()= Words |> loader |> safeParse PersistentPair.ParseRows |> List.ofArray
+    let loadPairs()= Words |> loader |> safeParse PersistentPair.ParseRows |> List.ofArray
     let loadTags()= Tagging |> loader |> safeParse PersistentTag.ParseRows |> List.ofArray
     let loadAssociations()= WordTagAssociation |> loader |> safeParse PersistentTagPairAssociation.ParseRows |> List.ofArray
     let saveWords w= ((new PersistentPair(w)).SaveToString()) |> saver Words 
@@ -135,7 +135,7 @@ type CsvPersistence(loader: Loader, saver: Saver)=
     let saveConfig c= ((new PersistentConfiguration(c |> Seq.singleton )).SaveToString()) |> saver Configuration
 
     let createPair (pair: WordPair)= 
-        let existing= loadWords()
+        let existing= loadPairs()
         let nextId=  Id.nextAfter existing
         let result= {pair with Id=nextId}.Serialize()
         let updated= result |> List.singleton |> List.append existing
@@ -144,7 +144,7 @@ type CsvPersistence(loader: Loader, saver: Saver)=
 
     let editPair (nu: WordPair)=
         let newRecord= nu.Serialize()
-        let existingWithoutOld= loadWords() |> List.filter (fun p -> p.Id<>nu.Id.Serialize())
+        let existingWithoutOld= loadPairs() |> List.filter (fun p -> p.Id<>nu.Id.Serialize())
         newRecord :: existingWithoutOld |> saveWords
         
     let getTagIds (tags: Tag list)=
@@ -196,7 +196,7 @@ type CsvPersistence(loader: Loader, saver: Saver)=
             let tagIds= getTagIds newPair.Tags
             updateAssociations (newPair.Id.Serialize()) tagIds
   
-        member this.GetPairs() = loadWords() |> List.map deserializePair
+        member this.GetPairs() = loadPairs() |> List.map deserializePair
 
         member this.GetTags() = loadTags() |> List.map Tag.Deserialize |> List.distinct
         
