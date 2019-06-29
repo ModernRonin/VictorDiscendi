@@ -19,7 +19,15 @@ type State=
         TagList: Tags.State
     }
 
+open WebSharper.JavaScript
+[<Direct("window.Auth0Wrapper.doLogin()")>]
+let login()= X<string>
+    
+
+
 let init()= 
+    let x= login()
+    WebSharper.JavaScript.Console.Log ("-----> " + x)
     {
         Screen= WelcomeScreen
         TagList= Tags.init()
@@ -35,7 +43,6 @@ let update msg (state: State) : Action<Message, State> =
         let updatedTagList= Tags.update m state.TagList
         SetModel {state with TagList=updatedTagList}
     | _ -> DoNothing 
-
 
 
 let pageFor (state: State)=
