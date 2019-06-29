@@ -43,8 +43,8 @@ module ``Persistence with CsvPersistenceStore``=
     [<Test>]
     let ``GetPairs loads word pairs with their tags``()=
         let underTest= create [
-                                (Words, "13,apple,Apfel,20100307221005,20190401100000,3,2,-1\r
-                                            17,car,Auto,20100307221107,20190402110000,4,3,-2")
+                                (Words, "13,apple,Apfel,2010-03-07-22-10-05,2019-04-01-10-00-00,3,2,-1\r
+                                            17,car,Auto,2010-03-07-22-11-07,2019-04-02-11-00-00,4,3,-2")
                                 (Tagging, "19,Obst\r\n23,Transport\r\n29,Substantiva\r\n31,Verba")
                                 (WordTagAssociation, "19,13\r\n23,17\r\n29,13\r\n29,17")
                                 ]
