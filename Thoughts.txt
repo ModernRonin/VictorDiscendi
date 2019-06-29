@@ -1,4 +1,6 @@
 ------------NEXT QUESTIONS------------
+add auth0 login
+
 switch to async for persistence
 add loading delay and disable refresh button while refreshing is underway
 add azure storage via emulator
@@ -7,14 +9,11 @@ also from a continuous deployment perspective
 a) 
 	site: azure storage
 	data: azure storage
-	identity: auth0
 	backend data access: azure functions
 b)	site: github pages
 	data: azure storage
-	identity: github?
 	backend data access: azure functions
 alternatives for
-	identity - ideally from azure, too?
 	backend data access: somehow without functions, directly tied in?
 	data/data access: Google/Google drive (seeing as we can't 
 	build or deploy for iOS, anyway)
