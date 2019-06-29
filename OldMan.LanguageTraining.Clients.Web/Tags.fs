@@ -13,7 +13,6 @@ type State=
         Tags: (Tag*int) list
     }
 let refresh()= 
-    WebSharper.JavaScript.Console.Log ("refreshing taglist...")
     {
         Tags= Api.service().ListTags() 
     }
