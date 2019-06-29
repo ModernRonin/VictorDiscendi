@@ -87,19 +87,20 @@ let private doSeed()=
             ("red", "rot")
         ] |> List.map makePair
     special::others |> store.savePairs
-    let makeAssociation english tagText=
-        {
-            PairId= store.loadPairs() 
-                        |> List.filter (fun p -> p.Left=english) 
-                        |> List.map (fun p -> p.Id) 
-                        |> List.head
-            TagId= store.loadTags()
-                        |> List.filter (fun t -> t.Text=tagText)
-                        |> List.map (fun t -> t.Id)
-                        |> List.head
-        }
     let makeAssociations (english, tags)=
-        tags |> List.map (makeAssociation english)
+        let makeOne tagText= 
+            {
+                PairId= store.loadPairs() 
+                            |> List.filter (fun p -> p.Left=english) 
+                            |> List.map (fun p -> p.Id) 
+                            |> List.head
+                TagId= store.loadTags()
+                            |> List.filter (fun t -> t.Text=tagText)
+                            |> List.map (fun t -> t.Id)
+                            |> List.head
+            }
+
+        tags |> List.map makeOne
     [
         ("apple", ["noun"; "fruit"])
         ("orange", ["noun"; "fruit"])
