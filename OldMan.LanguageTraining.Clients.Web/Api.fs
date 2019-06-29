@@ -115,4 +115,6 @@ let seed()=
         doSeed()
     | _ -> ()
     
-let service()= _service
+let service()= 
+    seed();
+    _service
