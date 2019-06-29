@@ -1,6 +1,28 @@
 ------------NEXT QUESTIONS------------
 switch to async for persistence
 add loading delay and disable refresh button while refreshing is underway
+add azure storage via emulator
+research deployment options  - which is doable, cheapest and easiest,
+also from a continuous deployment perspective
+a) 
+	site: azure storage
+	data: azure storage
+	identity: auth0
+	backend data access: azure functions
+b)	site: github pages
+	data: azure storage
+	identity: github?
+	backend data access: azure functions
+alternatives for
+	identity - ideally from azure, too?
+	backend data access: somehow without functions, directly tied in?
+	data/data access: Google/Google drive (seeing as we can't 
+	build or deploy for iOS, anyway)
+
+get a free SSL certificate while developing
+
+set up continuous deployment
+
 
 edit a tag (forms, UI changes to data (is that what reactive vars are for?))
 
