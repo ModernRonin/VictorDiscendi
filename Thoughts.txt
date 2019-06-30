@@ -1,4 +1,5 @@
 ------------NEXT QUESTIONS------------
+solve navbar with pages
 add auth0 login
 	* actually login
 	* display login state
