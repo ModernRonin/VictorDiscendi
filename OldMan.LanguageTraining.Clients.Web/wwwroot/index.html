@@ -2,29 +2,34 @@
 <html lang="en">
 <head>
     <title>Victor Discendi</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" type="text/css" href="index.css" />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <link rel="stylesheet" type="text/css" href="index.css"/>
     <style>
         /* Don't show the not-yet-loaded templates */
-        [ws-template], [ws-children-template] {
-            display: none;
-        }
+        [ws-template], [ws-children-template] { display: none; }
 
-        .hidden {
-            display: none;
-        }
+        .hidden { display: none; }
     </style>
     <script type="text/javascript" src="Content/OldMan.LanguageTraining.Clients.Web.head.js"></script>
 </head>
 <body id="site">
 
+    <div ws-template="Menu">
+        <span>${loginStateNotice}</span>
+        <button ws-onclick="Login" ws-attr="LoginAttributes">Login</button>
+        <button ws-onclick="Logout" ws-attr="LogoutAttributes">Logout</button>
+    </div>
+
     <div ws-template="Welcome">
         <h1>Welcome to Victor Discendis</h1>
         <ul>
-            <li><a href="#/tags">Tag List</a></li>
-            <li><a href="#/other">Other</a></li>
-            <li><a href="#/login">Login</a></li>
+            <li>
+                <a href="#/tags">Tag List</a>
+            </li>
+            <li>
+                <a href="#/other">Other</a>
+            </li>
         </ul>
     </div>
 
@@ -44,9 +49,13 @@
             </thead>
             <tbody ws-hole="Body">
                 <tr ws-template="Row">
-                    <td><b>${Text}</b></td>
+                    <td>
+                        <b>${Text}</b>
+                    </td>
                     <td>(${UsageCount})</td>
-                    <td><button ws-onclick="Delete" ws-attr="DeleteAttributes">Delete</button></td>
+                    <td>
+                        <button ws-onclick="Delete" ws-attr="DeleteAttributes">Delete</button>
+                    </td>
                 </tr>
             </tbody>
         </table>
