@@ -1,11 +1,82 @@
-﻿module OldMan.LanguageTraining.Web.Auth0
+﻿module OldMan.LanguageTraining.Web.Authentication
 
 open WebSharper
 open WebSharper.JavaScript
 
-[<Direct("window.Auth0Wrapper.login()")>]
-let login ()= X<Promise<unit>>
+type LoginOptions= 
+    {
+        [<Name("redirect_uri")>]
+        RedirectUrl: string
+    }
+module LoginOptions=
+    let create()= 
+        {
+            RedirectUrl= JS.Window.Location.Href
+        }
 
-[<Direct("window.Auth0Wrapper.isAuthenticated")>]
-let isLoggedIn= X<bool>
+type LogoutOptions=
+    {
+        [<Name("returnTo")>]
+        ReturnUrl: string
+    }
+module LogoutOptions=
+    let create()=
+        {
+            ReturnUrl= JS.Window.Location.Origin
+        }
+
+type Auth()=
+    [<Name("isAuthenticated")>]
+    [<Stub>]
+    member this.IsLoggedIn(): Promise<bool>= X<_> 
+    [<Name("loginWithRedirect")>]
+    [<Stub>]
+    member this.Login(options: LoginOptions): Promise<unit>= X<_>
+    [<Name("logout")>]
+    [<Stub>]
+    member this.Logout(options: LogoutOptions): Promise<unit>= X<_>
+
+type CreateOptions=
+    {
+        [<Name("domain")>]
+        Domain: string
+        [<Name("client_id")>]
+        ClientId: string
+    }
+
+[<Name("createAuth0Client")>]
+[<Stub>]
+let create(options: CreateOptions): Promise<Auth>= X<_>
+
+let mutable private auth: Auth option= None
+
+let setup domain clientId=
+    async {
+        let! a= create({Domain= domain; ClientId=clientId}).AsAsync()
+        auth <- Some a
+    }
+
+let isLoggedIn()= 
+    match auth with
+    | None -> failwith "setup not called or awaited"
+    | Some a ->
+        async {
+            return! a.IsLoggedIn().AsAsync()
+        }
+
+let login()=
+    match auth with
+    | None -> failwith "setup not called or awaited"
+    | Some a ->
+        async {
+            do! a.Login(LoginOptions.create()).AsAsync()
+        }
+
+let logout()=
+    match auth with
+    | None -> failwith "setup not called or awaited"
+    | Some a ->
+        async {
+            do! a.Logout(LogoutOptions.create()).AsAsync()
+        }
 

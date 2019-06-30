@@ -1,32 +1,51 @@
 ﻿var Auth0Wrapper =
 {
-     _config: {
-        domain: "oldman.eu.auth0.com",
+    isAuthenticated: false
+}
+
+let auth0 = null;
+const configureClient = async () => {
+    const config= {
+        domain: "oldman.eu.auth0.com", 
         clientId: "PCXHj3vHt1gCjgVkdYwRuUHmQtt8s11v"
-    },
-
-    _auth0: null,
-
-    configureClient : async () => {
-
-        Auth0Wrapper._auth0 = await createAuth0Client({
-                    domain: Auth0Wrapper._config.domain,
-                    client_id: Auth0Wrapper._config.clientId
-                });
-    }, 
-    updateAuthenticationStateus: async () => {
-        Auth0Wrapper.isAuthenticated = await Auth0Wrapper._auth0.isAuthenticated();
-    },
-    isAuthenticated: false,
-    login: async () => {
-         await Auth0Wrapper._auth0.loginWithRedirect({
-             redirect_uri: window.location.href
-         });
     }
-}
+    auth0= await createAuth0Client({
+        domain: config.domain,
+        client_id: config.clientId
+    });
+};
 
-window.onload = async () => {
-    await Auth0Wrapper.configureClient();
-    await Auth0Wrapper.updateAuthenticationStateus();
-}
+const updateAuthenticationState = async () => {
+    Auth0Wrapper.isAuthenticated = await auth0.isAuthenticated();
 
+};
+
+const login = async ()=> {
+    await auth0.loginWithRedirect({
+        redirect_uri: window.location.href
+    });
+}
+const logout = () => {
+    auth0.logout({
+        returnTo: window.location.origin
+    });
+};
+//window.onload = async () => {
+//    console.log("Configuring client");
+//    await configureClient();
+//    console.log("Updating auth state");
+//    updateAuthenticationState();    
+//    console.log("Setting login/logout functions");
+//    Auth0Wrapper.login = login;
+//    Auth0Wrapper.logout = logout;
+    
+//    if (!Auth0Wrapper.isAuthenticated) {
+//        const query = window.location.search;
+//        if (query.includes("code=") && query.includes("state=")) {
+//            await Auth0Wrapper.auth0.handleRedirectCallback();
+//            updateAuthenticationState();
+//            window.history.replaceState({}, document.title, "/");
+//        }
+//    }
+
+//}

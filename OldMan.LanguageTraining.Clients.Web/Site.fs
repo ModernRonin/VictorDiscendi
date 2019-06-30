@@ -24,6 +24,9 @@ type State=
     }
 
 let init()= 
+    async {
+        do! Authentication.setup "oldman.eu.auth0.com" "PCXHj3vHt1gCjgVkdYwRuUHmQtt8s11v"
+    }
     {
         IsLoggedIn= false
         Username= ""
@@ -45,9 +48,13 @@ let update msg (state: State) : Action<Message, State> =
         SetModel {state with TagList=updatedTagList}
     | Login -> 
         CommandAsync (fun _ -> async {
-            do! Auth0.login().AsAsync()
+            do! Authentication.login()
         })
-    | Logout -> DoNothing
+    | Logout -> 
+        CommandAsync (fun _ -> async {
+            do! Authentication.logout()
+        })
+
 
 
 let render (dispatch: Message Dispatch) (state: View<State>)=
@@ -55,7 +62,7 @@ let render (dispatch: Message Dispatch) (state: View<State>)=
         match state.IsLoggedIn with
         | true -> sprintf "Welcome, %s!" state.Username
         | false ->  "Please login!"
-        
+    let isLoggedIn state= state.IsLoggedIn  
 
     let renderScreen (state: State)=
         let delegateToComponent renderer stateExtractor transformer=
@@ -71,9 +78,9 @@ let render (dispatch: Message Dispatch) (state: View<State>)=
     Templates.Menu()
         .Login(fun _ -> dispatch Login)
         .Logout(fun _ -> dispatch Logout)
-        .LoginAttributes(hiddenIf Auth0.isLoggedIn)
-        .LogoutAttributes(visibleIf Auth0.isLoggedIn)
-        .loginStateNotice(state.V |> notice)
+        //.LoginAttributes(state.V |> isLoggedIn |> hiddenIf)
+        //.LogoutAttributes(state.V |> isLoggedIn |> visibleIf)
+        .LoginStateNotice(state.V |> notice)
         .Screen((V (state.V)).Doc renderScreen)
         .Doc()
 

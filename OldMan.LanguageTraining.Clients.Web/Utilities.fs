@@ -11,3 +11,4 @@ module Utilties=
     let hiddenIf condition= condition |> Attr.ClassPred "hidden" 
     let visibleIf condition= not condition |> hiddenIf
 
+        
