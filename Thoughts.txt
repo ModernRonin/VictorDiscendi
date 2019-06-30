@@ -1,5 +1,14 @@
 ------------NEXT QUESTIONS------------
 add auth0 login
+	* actually login
+	* display login state
+	* display username
+	* make user return to current page after login (instead of home)
+	* allow logout
+	* make login/logout visible depending on login state
+	* test token refresh/timout
+	* make whole login/logout/login state something
+		displayed on each page
 
 switch to async for persistence
 add loading delay and disable refresh button while refreshing is underway
