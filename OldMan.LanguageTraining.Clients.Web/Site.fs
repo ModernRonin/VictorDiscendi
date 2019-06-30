@@ -55,13 +55,16 @@ let render (dispatch: Message Dispatch) (state: View<State>)=
         | true -> sprintf "Welcome, %s!" state.Username
         | false ->  "Please login!"
         
+
     let renderScreen (state: State)=
+        let delegateToComponent renderer stateExtractor transformer=
+            let subDispatch msg = dispatch (transformer msg)
+            renderer subDispatch (View.Const (stateExtractor state))
         match state.Screen with
         | WelcomeScreen -> Templates.Welcome().Doc()
         | OtherScreen -> Templates.Other().Doc()
         | TagListScreen ->
-            let subDispatch msg= dispatch (TagListMessage msg)
-            Tags.render subDispatch (View.Const state.TagList)
+            delegateToComponent Tags.render (fun s -> s.TagList) (fun m -> TagListMessage m)
 
     Templates.Menu()
         .Login(fun _ -> dispatch Login)
@@ -71,21 +74,7 @@ let render (dispatch: Message Dispatch) (state: View<State>)=
         .Doc()
 
 
-let pageFor (state: State)=
-    let dataless docCreator= Page.Single(fun _ _ -> docCreator())
-    let delegateToComponent renderer stateExtractor transformer=
-        Page.Single(fun (dispatch: Dispatch<Message>) (state: View<State>) -> 
-            let subDispatch msg = dispatch (transformer msg)
-            renderer subDispatch (V (stateExtractor state.V))
-        )
-    let pageCreator= 
-        match state.Screen with
-        | WelcomeScreen -> dataless (fun () -> Templates.Welcome().Doc())
-        | OtherScreen -> dataless (fun () -> Templates.Other().Doc())
-        | TagListScreen -> delegateToComponent Tags.render (fun s -> s.TagList) (fun msg -> (TagListMessage msg))
-
-    (Page.Single render)()
-    //pageCreator()
+let pageFor _ = (Page.Single render)()
 
 let goto (screen: Screen) (state: State) : State =
     match screen with
