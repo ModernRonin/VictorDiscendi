@@ -19,19 +19,12 @@ type State=
         TagList: Tags.State
     }
 
-open WebSharper.JavaScript
-[<Direct("window.Auth0Wrapper.doLogin()")>]
-let login()= X<string>
-    
-
-
 let init()= 
-    let x= login()
-    WebSharper.JavaScript.Console.Log ("-----> " + x)
     {
         Screen= WelcomeScreen
         TagList= Tags.init()
     }
+
 
 [<NamedUnionCases "type">]
 type Message =
