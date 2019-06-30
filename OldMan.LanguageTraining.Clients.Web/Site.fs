@@ -1,6 +1,7 @@
 module OldMan.LanguageTraining.Web.Site
 
 open WebSharper
+open WebSharper.JavaScript
 open WebSharper.UI
 open WebSharper.UI.Client
 open WebSharper.Mvu
@@ -15,12 +16,17 @@ type Screen=
 
 type State=
     {
+        IsLoggedIn: bool
+        Username: string
+        // maybe: isLoading
         Screen : Screen
         TagList: Tags.State
     }
 
 let init()= 
     {
+        IsLoggedIn= false
+        Username= ""
         Screen= WelcomeScreen
         TagList= Tags.init()
     }
@@ -29,13 +35,41 @@ let init()=
 [<NamedUnionCases "type">]
 type Message =
     | TagListMessage of Tags.Message
+    | Login
+    | Logout
 
 let update msg (state: State) : Action<Message, State> =
     match msg with
     | TagListMessage m -> 
         let updatedTagList= Tags.update m state.TagList
         SetModel {state with TagList=updatedTagList}
-    | _ -> DoNothing 
+    | Login -> 
+        CommandAsync (fun _ -> async {
+            do! Auth0.login().AsAsync()
+        })
+    | Logout -> DoNothing
+
+let render (dispatch: Message Dispatch) (state: View<State>)=
+    let notice state= 
+        match state.IsLoggedIn with
+        | true -> sprintf "Welcome, %s!" state.Username
+        | false ->  "Please login!"
+        
+    let renderScreen (screen: View<Screen>)=
+        match screen.V with
+        | WelcomeScreen -> Templates.Welcome().Doc()
+        | OtherScreen -> Templates.Other().Doc()
+        | TagListScreen ->
+            let subDispatch msg= dispatch (TagListMessage msg)
+            Tags.render subDispatch (V state.V.TagList)
+
+    let screen= (V (state.V.Screen)) |> renderScreen
+    Templates.Menu()
+        .Login(fun _ -> dispatch Login)
+        .Logout(fun _ -> dispatch Logout)
+        .loginStateNotice(state.V |> notice)
+        .Screen(screen)
+        .Doc()
 
 
 let pageFor (state: State)=
@@ -51,7 +85,8 @@ let pageFor (state: State)=
         | OtherScreen -> dataless (fun () -> Templates.Other().Doc())
         | TagListScreen -> delegateToComponent Tags.render (fun s -> s.TagList) (fun msg -> (TagListMessage msg))
 
-    pageCreator()
+    (Page.Single render)()
+    //pageCreator()
 
 let goto (screen: Screen) (state: State) : State =
     match screen with

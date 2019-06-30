@@ -11,7 +11,6 @@
     <Compile Include="Auth0.fs" />
     <Compile Include="Api.fs" />
     <Compile Include="Templating.fs" />
-    <Compile Include="Menu.fs" />
     <Compile Include="Tags.fs" />
     <Compile Include="Site.fs" />
     <Compile Include="EntryPoint.fs" />
