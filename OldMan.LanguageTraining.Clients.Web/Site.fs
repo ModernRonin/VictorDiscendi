@@ -55,20 +55,19 @@ let render (dispatch: Message Dispatch) (state: View<State>)=
         | true -> sprintf "Welcome, %s!" state.Username
         | false ->  "Please login!"
         
-    let renderScreen (screen: View<Screen>)=
-        match screen.V with
+    let renderScreen (state: State)=
+        match state.Screen with
         | WelcomeScreen -> Templates.Welcome().Doc()
         | OtherScreen -> Templates.Other().Doc()
         | TagListScreen ->
             let subDispatch msg= dispatch (TagListMessage msg)
-            Tags.render subDispatch (V state.V.TagList)
+            Tags.render subDispatch (View.Const state.TagList)
 
-    let screen= (V (state.V.Screen)) |> renderScreen
     Templates.Menu()
         .Login(fun _ -> dispatch Login)
         .Logout(fun _ -> dispatch Logout)
         .loginStateNotice(state.V |> notice)
-        .Screen(screen)
+        .Screen((V (state.V)).Doc renderScreen)
         .Doc()
 
 
