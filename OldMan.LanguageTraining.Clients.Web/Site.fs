@@ -49,6 +49,7 @@ let update msg (state: State) : Action<Message, State> =
         })
     | Logout -> DoNothing
 
+
 let render (dispatch: Message Dispatch) (state: View<State>)=
     let notice state= 
         match state.IsLoggedIn with
@@ -66,9 +67,12 @@ let render (dispatch: Message Dispatch) (state: View<State>)=
         | TagListScreen ->
             delegateToComponent Tags.render (fun s -> s.TagList) (fun m -> TagListMessage m)
 
+
     Templates.Menu()
         .Login(fun _ -> dispatch Login)
         .Logout(fun _ -> dispatch Logout)
+        .LoginAttributes(hiddenIf Auth0.isLoggedIn)
+        .LogoutAttributes(visibleIf Auth0.isLoggedIn)
         .loginStateNotice(state.V |> notice)
         .Screen((V (state.V)).Doc renderScreen)
         .Doc()

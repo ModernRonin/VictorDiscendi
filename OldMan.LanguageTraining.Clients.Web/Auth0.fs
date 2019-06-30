@@ -7,5 +7,5 @@ open WebSharper.JavaScript
 let login ()= X<Promise<unit>>
 
 [<Direct("window.Auth0Wrapper.isAuthenticated")>]
-let isLoggedIn()= X<bool>
+let isLoggedIn= X<bool>
 
