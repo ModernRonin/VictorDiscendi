@@ -12,10 +12,12 @@
         .hidden { display: none; }
     </style>
     <script type="text/javascript" src="Content/OldMan.LanguageTraining.Clients.Web.head.js"></script>
+    <script type="text/javascript" src="https://cdn.auth0.com/js/auth0-spa-js/1.0/auth0-spa-js.production.js"></script>
 </head>
 <body id="site">
 
     <div ws-template="Menu">
+        <button ws-onclick="SetupAuth">Setup</button>
         <span>${LoginStateNotice}</span>
         <button ws-onclick="Login" ws-attr="LoginAttributes">Login</button>
         <button ws-onclick="Logout" ws-attr="LogoutAttributes">Logout</button>
@@ -63,8 +65,7 @@
         <button ws-onclick="Refresh" ws-attr="RefreshAttributes">Refresh</button>
     </div>
 
-    <script type="text/javascript" src="https://cdn.auth0.com/js/auth0-spa-js/1.0/auth0-spa-js.production.js"></script>
-    <script type="text/javascript" src="Auth0Wrapper.js"></script>
+<!--    <script type="text/javascript" src="Auth0Wrapper.js"></script>-->
     <script type="text/javascript" src="Content/OldMan.LanguageTraining.Clients.Web.js"></script>
 </body>
 </html>

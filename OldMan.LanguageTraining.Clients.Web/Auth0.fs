@@ -44,16 +44,19 @@ type CreateOptions=
         ClientId: string
     }
 
-[<Name("createAuth0Client")>]
-[<Stub>]
+[<Direct("createAuth0Client($options)")>]
 let create(options: CreateOptions): Promise<Auth>= X<_>
 
 let mutable private auth: Auth option= None
 
 let setup domain clientId=
     async {
+        Console.Log "Creating client..."
         let! a= create({Domain= domain; ClientId=clientId}).AsAsync()
+        Console.Log "client created"
         auth <- Some a
+        Console.Log "client set"
+        Console.Log auth
     }
 
 let isLoggedIn()= 

@@ -8,6 +8,11 @@ open WebSharper.Mvu
 
 open OldMan.LanguageTraining.Web
 
+let setupAuth=
+    async {
+        Console.Log "Calling setup"
+        do! Authentication.setup "oldman.eu.auth0.com" "PCXHj3vHt1gCjgVkdYwRuUHmQtt8s11v"
+    }
 
 type Screen=
     | [<EndPoint "/tags">] TagListScreen 
@@ -24,9 +29,6 @@ type State=
     }
 
 let init()= 
-    async {
-        do! Authentication.setup "oldman.eu.auth0.com" "PCXHj3vHt1gCjgVkdYwRuUHmQtt8s11v"
-    }
     {
         IsLoggedIn= false
         Username= ""
@@ -40,6 +42,7 @@ type Message =
     | TagListMessage of Tags.Message
     | Login
     | Logout
+    | SetupAuth
 
 let update msg (state: State) : Action<Message, State> =
     match msg with
@@ -54,6 +57,9 @@ let update msg (state: State) : Action<Message, State> =
         CommandAsync (fun _ -> async {
             do! Authentication.logout()
         })
+    | SetupAuth ->
+        CommandAsync (fun _ -> setupAuth)
+        
 
 
 
@@ -76,6 +82,7 @@ let render (dispatch: Message Dispatch) (state: View<State>)=
 
 
     Templates.Menu()
+        .SetupAuth(fun _ -> dispatch SetupAuth)
         .Login(fun _ -> dispatch Login)
         .Logout(fun _ -> dispatch Logout)
         //.LoginAttributes(state.V |> isLoggedIn |> hiddenIf)
