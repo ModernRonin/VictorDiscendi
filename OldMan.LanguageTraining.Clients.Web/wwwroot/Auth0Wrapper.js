@@ -5,11 +5,11 @@
 
 let auth0 = null;
 const configureClient = async () => {
-    const config= {
-        domain: "oldman.eu.auth0.com", 
-        clientId: "PCXHj3vHt1gCjgVkdYwRuUHmQtt8s11v"
-    }
-    auth0= await createAuth0Client({
+        const config= {
+            domain: "oldman.eu.auth0.com", 
+            clientId: "PCXHj3vHt1gCjgVkdYwRuUHmQtt8s11v"
+        }
+    auth0= await createAuth0Client({        
         domain: config.domain,
         client_id: config.clientId
     });

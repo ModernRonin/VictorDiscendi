@@ -59,7 +59,7 @@ let update msg (state: State) : Action<Message, State> =
         })
     | SetupAuth ->
         CommandAsync (fun _ -> setupAuth)
-        
+
 
 
 
@@ -68,7 +68,11 @@ let render (dispatch: Message Dispatch) (state: View<State>)=
         match state.IsLoggedIn with
         | true -> sprintf "Welcome, %s!" state.Username
         | false ->  "Please login!"
-    let isLoggedIn state= state.IsLoggedIn  
+    let inline isLoggedIn state= state.IsLoggedIn  
+    let visibleIfLoggedIn state=
+        match state.IsLoggedIn with
+        | true -> Attr.ClassPred "hidden" false
+        | false -> Attr.ClassPred "hidden" true
 
     let renderScreen (state: State)=
         let delegateToComponent renderer stateExtractor transformer=
@@ -86,7 +90,7 @@ let render (dispatch: Message Dispatch) (state: View<State>)=
         .Login(fun _ -> dispatch Login)
         .Logout(fun _ -> dispatch Logout)
         //.LoginAttributes(state.V |> isLoggedIn |> hiddenIf)
-        //.LogoutAttributes(state.V |> isLoggedIn |> visibleIf)
+        //.LogoutAttributes(state.V |> visibleIfLoggedIn)
         .LoginStateNotice(state.V |> notice)
         .Screen((V (state.V)).Doc renderScreen)
         .Doc()
