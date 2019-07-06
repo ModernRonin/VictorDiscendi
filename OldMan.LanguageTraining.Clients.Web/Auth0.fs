@@ -11,7 +11,7 @@ type LoginOptions=
 module LoginOptions=
     let create()= 
         {
-            RedirectUrl= JS.Window.Location.Href
+            RedirectUrl= JS.Window.Origin + "#/auth/loggedin"
         }
 
 type LogoutOptions=
@@ -22,7 +22,7 @@ type LogoutOptions=
 module LogoutOptions=
     let create()=
         {
-            ReturnUrl= JS.Window.Location.Origin
+            ReturnUrl= JS.Window.Origin + "#/auth/loggedout"
         }
 
 type Auth()=
@@ -35,6 +35,9 @@ type Auth()=
     [<Name("logout")>]
     [<Stub>]
     member this.Logout(options: LogoutOptions): Promise<unit>= X<_>
+    [<Name("handleRedirectCallback")>]
+    [<Stub>]
+    member this.finishLogin() : Promise<unit>= X<_>
 
 type CreateOptions=
     {
@@ -48,6 +51,19 @@ type CreateOptions=
 let create(options: CreateOptions): Promise<Auth>= X<_>
 
 let mutable private auth: Auth option= None
+let mutable private _isLoggedIn= false
+
+
+let updateAuthenticationStatus()= 
+    match auth with
+    | None -> failwith "setup not called or awaited"
+    | Some a ->
+        async {
+            Console.Log "updating login status..."
+            let! result= a.IsLoggedIn().AsAsync()
+            _isLoggedIn <- result
+            Console.Log ("isLoggedIn=" + string _isLoggedIn)
+        }
 
 let setup domain clientId=
     async {
@@ -57,15 +73,10 @@ let setup domain clientId=
         auth <- Some a
         Console.Log "client set"
         Console.Log auth
+        do! updateAuthenticationStatus()
     }
 
-let isLoggedIn()= 
-    match auth with
-    | None -> failwith "setup not called or awaited"
-    | Some a ->
-        async {
-            return! a.IsLoggedIn().AsAsync()
-        }
+let isLoggedIn()= _isLoggedIn
 
 let login()=
     match auth with
@@ -81,5 +92,14 @@ let logout()=
     | Some a ->
         async {
             do! a.Logout(LogoutOptions.create()).AsAsync()
+            _isLoggedIn <- false
         }
 
+let finishLogin()=
+    match auth with
+    | None -> failwith "setup not called or awaited"
+    | Some a ->
+        async {
+            do! a.finishLogin().AsAsync()
+            do! updateAuthenticationStatus()
+        }

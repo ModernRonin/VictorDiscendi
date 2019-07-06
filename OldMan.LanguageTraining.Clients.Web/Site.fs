@@ -20,7 +20,7 @@ type Route=
     | [<EndPoint "/other">] Other
     | [<EndPoint "/auth/login">] AuthLogin
     | [<EndPoint "/auth/loggedin">] AuthLoggedIn
-    | [<EndPoint "/auth/logout">] AuthLogout
+    | [<EndPoint "/auth/loggedout">] AuthLoggedOut
 
 type Screen=
     | TagListScreen 
@@ -54,6 +54,9 @@ type Message =
     | Logout
     | SetupAuth
 
+let updateLoginStatus state= 
+    {state with IsLoggedIn= Authentication.isLoggedIn()}
+
 let update msg (state: State) : Action<Message, State> =
     match msg with
     | TagListMessage m -> 
@@ -63,12 +66,18 @@ let update msg (state: State) : Action<Message, State> =
         CommandAsync (fun _ -> async {
             do! Authentication.login()
         })
+        +
+        UpdateModel updateLoginStatus
     | Logout -> 
         CommandAsync (fun _ -> async {
             do! Authentication.logout()
         })
+        +
+        UpdateModel updateLoginStatus
     | SetupAuth ->
         CommandAsync (fun _ -> setupAuth)
+        +
+        UpdateModel updateLoginStatus
 
 
 
@@ -113,9 +122,14 @@ let goto (route: Route) (state: State) : State =
     | Welcome -> {state with Route=route; Screen= WelcomeScreen}
     | Other -> {state with Route=route; Screen= OtherScreen}
     | TagList -> {state with Route=route; Screen= TagListScreen; TagList= Tags.refresh()}
-    | AuthLogin -> {state with Route=route; Screen= WelcomeScreen}
-    | AuthLoggedIn -> {state with Route=route; Screen= WelcomeScreen}
-    | AuthLogout -> {state with Route=route; Screen= WelcomeScreen}
+    | AuthLogin -> 
+        Authentication.login().AsPromise() |> ignore
+        {state with Route=route; Screen= WelcomeScreen}
+    | AuthLoggedIn -> 
+        Authentication.finishLogin() |> ignore
+        state
+    | AuthLoggedOut -> 
+        {state with Route=route; Screen= WelcomeScreen}
 
 
 let routeForState state = state.Route
