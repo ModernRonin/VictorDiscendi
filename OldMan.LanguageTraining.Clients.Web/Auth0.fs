@@ -80,6 +80,7 @@ let private updateAuthenticationStatus()=
         let! auth= ensureClient()
         let! result= auth.IsLoggedIn().AsAsync()
         _isLoggedIn <- result
+        Console.Log ("isLoggedIn: " + string result)
     }
 
 let setup= updateAuthenticationStatus
@@ -104,5 +105,6 @@ let finishLogin()=
     async {
         let! auth= ensureClient()
         do! auth.finishLogin().AsAsync()
+        JS.Window.History.ReplaceState(new JSObject(), JS.Document.Title, "/");
         do! updateAuthenticationStatus()
     }

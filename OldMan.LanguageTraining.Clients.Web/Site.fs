@@ -49,6 +49,7 @@ type Message =
     | Login
     | Logout
     | SetupAuth
+    | UpdateLoginInfo
 
 let updateLoginStatus state= 
     {state with IsLoggedIn= Authentication.isLoggedIn()}
@@ -64,6 +65,7 @@ let update msg (state: State) : Action<Message, State> =
     | Login -> authCommand Authentication.login
     | Logout -> authCommand Authentication.logout
     | SetupAuth -> authCommand Authentication.setup
+    | UpdateLoginInfo -> authCommand Authentication.setup
 
 let render (dispatch: Message Dispatch) (state: View<State>)=
     let notice state= 
@@ -90,6 +92,7 @@ let render (dispatch: Message Dispatch) (state: View<State>)=
     Templates.Menu()
         .Login(fun _ -> dispatch Login)
         .Logout(fun _ -> dispatch Logout)
+        .UpdateLoginStatus(fun _ -> dispatch UpdateLoginInfo)
         //.LoginAttributes(state.V |> isLoggedIn |> hiddenIf)
         //.LogoutAttributes(state.V |> visibleIfLoggedIn)
         .LoginStateNotice(state.V |> notice)
@@ -108,7 +111,7 @@ let goto (route: Route) (state: State) : State =
         Authentication.login().AsPromise() |> ignore
         {state with Route=route; Screen= WelcomeScreen}
     | AuthLoggedIn -> 
-        Authentication.finishLogin() |> ignore
+        Authentication.finishLogin().AsPromise() |> ignore
         state
     | AuthLoggedOut -> 
         {state with Route=route; Screen= WelcomeScreen}
