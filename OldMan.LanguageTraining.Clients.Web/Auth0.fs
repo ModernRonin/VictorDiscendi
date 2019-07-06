@@ -3,6 +3,10 @@
 open WebSharper
 open WebSharper.JavaScript
 
+
+let private domain= "oldman.eu.auth0.com" 
+let private clientId= "PCXHj3vHt1gCjgVkdYwRuUHmQtt8s11v"
+
 type LoginOptions= 
     {
         [<Name("redirect_uri")>]
@@ -65,15 +69,29 @@ let updateAuthenticationStatus()=
             Console.Log ("isLoggedIn=" + string _isLoggedIn)
         }
 
-let setup domain clientId=
-    async {
+let createClient()=
+    async{
         Console.Log "Creating client..."
-        let! a= create({Domain= domain; ClientId=clientId}).AsAsync()
+        let! result= create({Domain= domain; ClientId=clientId}).AsAsync()
         Console.Log "client created"
+        return result
+    }
+
+let setup()= 
+    async {
+        let! a= createClient()
         auth <- Some a
         Console.Log "client set"
         Console.Log auth
         do! updateAuthenticationStatus()
+    }
+
+let ensureClient()=
+    async {
+        match auth with 
+        | None -> do! setup()
+        | _ -> ()
+        return auth |> Option.get
     }
 
 let isLoggedIn()= _isLoggedIn
@@ -96,10 +114,8 @@ let logout()=
         }
 
 let finishLogin()=
-    match auth with
-    | None -> failwith "setup not called or awaited"
-    | Some a ->
-        async {
-            do! a.finishLogin().AsAsync()
-            do! updateAuthenticationStatus()
-        }
+    async {
+        let! auth= ensureClient()
+        do! auth.finishLogin().AsAsync()
+        do! updateAuthenticationStatus()
+    }

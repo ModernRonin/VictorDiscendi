@@ -8,12 +8,6 @@ open WebSharper.Mvu
 
 open OldMan.LanguageTraining.Web
 
-let setupAuth=
-    async {
-        Console.Log "Calling setup"
-        do! Authentication.setup "oldman.eu.auth0.com" "PCXHj3vHt1gCjgVkdYwRuUHmQtt8s11v"
-    }
-
 type Route= 
     | [<EndPoint "/tags">] TagList
     | [<EndPoint "/">] Welcome
@@ -63,19 +57,15 @@ let update msg (state: State) : Action<Message, State> =
         let updatedTagList= Tags.update m state.TagList
         SetModel {state with TagList=updatedTagList}
     | Login -> 
-        CommandAsync (fun _ -> async {
-            do! Authentication.login()
-        })
+        CommandAsync (fun _ -> Authentication.login())
         +
         UpdateModel updateLoginStatus
     | Logout -> 
-        CommandAsync (fun _ -> async {
-            do! Authentication.logout()
-        })
+        CommandAsync (fun _ -> Authentication.logout())
         +
         UpdateModel updateLoginStatus
     | SetupAuth ->
-        CommandAsync (fun _ -> setupAuth)
+        CommandAsync (fun _ -> Authentication.setup())
         +
         UpdateModel updateLoginStatus
 
