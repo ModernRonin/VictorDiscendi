@@ -95,7 +95,6 @@ let render (dispatch: Message Dispatch) (state: View<State>)=
 
 
     Templates.Menu()
-        .SetupAuth(fun _ -> dispatch SetupAuth)
         .Login(fun _ -> dispatch Login)
         .Logout(fun _ -> dispatch Logout)
         //.LoginAttributes(state.V |> isLoggedIn |> hiddenIf)
