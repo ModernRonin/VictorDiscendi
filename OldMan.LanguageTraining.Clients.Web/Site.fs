@@ -8,6 +8,7 @@ open WebSharper.Mvu
 
 open OldMan.LanguageTraining.Web
 
+[<NamedUnionCases "type">]
 type Route= 
     | [<EndPoint "/tags">] TagList
     | [<EndPoint "/">] Welcome
@@ -16,6 +17,7 @@ type Route=
     | [<EndPoint "/auth/loggedin">] AuthLoggedIn
     | [<EndPoint "/auth/loggedout">] AuthLoggedOut
 
+[<NamedUnionCases "type">]
 type Screen=
     | TagListScreen 
     | WelcomeScreen
@@ -52,25 +54,16 @@ let updateLoginStatus state=
     {state with IsLoggedIn= Authentication.isLoggedIn()}
 
 let update msg (state: State) : Action<Message, State> =
+    let authCommand call= 
+        CommandAsync (fun _ -> call()) + UpdateModel updateLoginStatus
+
     match msg with
     | TagListMessage m -> 
         let updatedTagList= Tags.update m state.TagList
         SetModel {state with TagList=updatedTagList}
-    | Login -> 
-        CommandAsync (fun _ -> Authentication.login())
-        +
-        UpdateModel updateLoginStatus
-    | Logout -> 
-        CommandAsync (fun _ -> Authentication.logout())
-        +
-        UpdateModel updateLoginStatus
-    | SetupAuth ->
-        CommandAsync (fun _ -> Authentication.setup())
-        +
-        UpdateModel updateLoginStatus
-
-
-
+    | Login -> authCommand Authentication.login
+    | Logout -> authCommand Authentication.logout
+    | SetupAuth -> authCommand Authentication.setup
 
 let render (dispatch: Message Dispatch) (state: View<State>)=
     let notice state= 

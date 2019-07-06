@@ -58,60 +58,47 @@ let mutable private auth: Auth option= None
 let mutable private _isLoggedIn= false
 
 
-let updateAuthenticationStatus()= 
-    match auth with
-    | None -> failwith "setup not called or awaited"
-    | Some a ->
-        async {
-            Console.Log "updating login status..."
-            let! result= a.IsLoggedIn().AsAsync()
-            _isLoggedIn <- result
-            Console.Log ("isLoggedIn=" + string _isLoggedIn)
-        }
 
-let createClient()=
+let private createClient()=
     async{
-        Console.Log "Creating client..."
         let! result= create({Domain= domain; ClientId=clientId}).AsAsync()
-        Console.Log "client created"
         return result
     }
 
-let setup()= 
-    async {
-        let! a= createClient()
-        auth <- Some a
-        Console.Log "client set"
-        Console.Log auth
-        do! updateAuthenticationStatus()
-    }
-
-let ensureClient()=
+let private ensureClient()=
     async {
         match auth with 
-        | None -> do! setup()
+        | None -> 
+            let! a= createClient()
+            auth <- Some a
         | _ -> ()
         return auth |> Option.get
     }
 
+let private updateAuthenticationStatus()= 
+    async {
+        let! auth= ensureClient()
+        let! result= auth.IsLoggedIn().AsAsync()
+        _isLoggedIn <- result
+    }
+
+let setup= updateAuthenticationStatus
+
 let isLoggedIn()= _isLoggedIn
 
 let login()=
-    match auth with
-    | None -> failwith "setup not called or awaited"
-    | Some a ->
-        async {
-            do! a.Login(LoginOptions.create()).AsAsync()
-        }
+    async {
+        let! auth= ensureClient()
+        do! auth.Login(LoginOptions.create()).AsAsync()
+    }
 
 let logout()=
-    match auth with
-    | None -> failwith "setup not called or awaited"
-    | Some a ->
-        async {
-            do! a.Logout(LogoutOptions.create()).AsAsync()
-            _isLoggedIn <- false
-        }
+    async {
+        let! auth= ensureClient()
+        do! auth.Logout(LogoutOptions.create()).AsAsync()
+        _isLoggedIn <- false
+    }
+
 
 let finishLogin()=
     async {
