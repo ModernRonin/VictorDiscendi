@@ -14,10 +14,18 @@ let setupAuth=
         do! Authentication.setup "oldman.eu.auth0.com" "PCXHj3vHt1gCjgVkdYwRuUHmQtt8s11v"
     }
 
+type Route= 
+    | [<EndPoint "/tags">] TagList
+    | [<EndPoint "/">] Welcome
+    | [<EndPoint "/other">] Other
+    | [<EndPoint "/auth/login">] AuthLogin
+    | [<EndPoint "/auth/loggedin">] AuthLoggedIn
+    | [<EndPoint "/auth/logout">] AuthLogout
+
 type Screen=
-    | [<EndPoint "/tags">] TagListScreen 
-    | [<EndPoint "/">] WelcomeScreen
-    | [<EndPoint "/other">] OtherScreen
+    | TagListScreen 
+    | WelcomeScreen
+    | OtherScreen
 
 type State=
     {
@@ -25,6 +33,7 @@ type State=
         Username: string
         // maybe: isLoading
         Screen : Screen
+        Route: Route
         TagList: Tags.State
     }
 
@@ -32,6 +41,7 @@ let init()=
     {
         IsLoggedIn= false
         Username= ""
+        Route= Welcome
         Screen= WelcomeScreen
         TagList= Tags.init()
     }
@@ -98,9 +108,15 @@ let render (dispatch: Message Dispatch) (state: View<State>)=
 
 let pageFor _ = (Page.Single render)()
 
-let goto (screen: Screen) (state: State) : State =
-    match screen with
-    | WelcomeScreen 
-    | OtherScreen -> {state with Screen=screen}
-    | TagListScreen -> 
-        {state with Screen=screen; TagList= Tags.refresh()}
+let goto (route: Route) (state: State) : State =
+    match route with
+    | Welcome -> {state with Route=route; Screen= WelcomeScreen}
+    | Other -> {state with Route=route; Screen= OtherScreen}
+    | TagList -> {state with Route=route; Screen= TagListScreen; TagList= Tags.refresh()}
+    | AuthLogin -> {state with Route=route; Screen= WelcomeScreen}
+    | AuthLoggedIn -> {state with Route=route; Screen= WelcomeScreen}
+    | AuthLogout -> {state with Route=route; Screen= WelcomeScreen}
+
+
+let routeForState state = state.Route
+    

@@ -10,10 +10,10 @@ open OldMan.LanguageTraining.Web
 
 [<SPAEntryPoint>]
 let Main () =
-    let router = Router.Infer<Site.Screen>()
+    let router = Router.Infer<Site.Route>()
 
     App.CreatePaged (Site.init()) Site.update Site.pageFor
-    |> App.WithCustomRouting router (fun s -> s.Screen) Site.goto
+    |> App.WithCustomRouting router Site.routeForState Site.goto
 #if DEBUG
     |> App.WithLocalStorage "VictorDiscendisDev"
     |> App.WithRemoteDev (RemoteDev.Options(hostname = "localhost", port = 8000))
