@@ -13,7 +13,6 @@ type Route=
     | [<EndPoint "/tags">] TagList
     | [<EndPoint "/">] Welcome
     | [<EndPoint "/other">] Other
-    | [<EndPoint "/auth/login">] AuthLogin
     | [<EndPoint "/auth/loggedin">] AuthLoggedIn
     | [<EndPoint "/auth/loggedout">] AuthLoggedOut
 
@@ -48,24 +47,20 @@ type Message =
     | TagListMessage of Tags.Message
     | Login
     | Logout
-    | SetupAuth
-    | UpdateLoginInfo
 
 let updateLoginStatus state= 
     {state with IsLoggedIn= Authentication.isLoggedIn()}
 
 let update msg (state: State) : Action<Message, State> =
-    let authCommand call= 
-        CommandAsync (fun _ -> call()) + UpdateModel updateLoginStatus
-
     match msg with
     | TagListMessage m -> 
         let updatedTagList= Tags.update m state.TagList
         SetModel {state with TagList=updatedTagList}
-    | Login -> authCommand Authentication.login
-    | Logout -> authCommand Authentication.logout
-    | SetupAuth -> authCommand Authentication.setup
-    | UpdateLoginInfo -> authCommand Authentication.setup
+    | Login -> CommandAsync(fun _ -> Authentication.login().AsAsync())
+    | Logout -> 
+        Authentication.logout() |> ignore
+        Action.DoNothing
+        //CommandAsync(fun _ -> Authentication.logout().AsAsync())
 
 let render (dispatch: Message Dispatch) (state: View<State>)=
     let notice state= 
@@ -92,7 +87,6 @@ let render (dispatch: Message Dispatch) (state: View<State>)=
     Templates.Menu()
         .Login(fun _ -> dispatch Login)
         .Logout(fun _ -> dispatch Logout)
-        .UpdateLoginStatus(fun _ -> dispatch UpdateLoginInfo)
         //.LoginAttributes(state.V |> isLoggedIn |> hiddenIf)
         //.LogoutAttributes(state.V |> visibleIfLoggedIn)
         .LoginStateNotice(state.V |> notice)
@@ -107,14 +101,10 @@ let goto (route: Route) (state: State) : State =
     | Welcome -> {state with Route=route; Screen= WelcomeScreen}
     | Other -> {state with Route=route; Screen= OtherScreen}
     | TagList -> {state with Route=route; Screen= TagListScreen; TagList= Tags.refresh()}
-    | AuthLogin -> 
-        Authentication.login().AsPromise() |> ignore
-        {state with Route=route; Screen= WelcomeScreen}
     | AuthLoggedIn -> 
-        Authentication.finishLogin().AsPromise() |> ignore
-        state
+        {state with IsLoggedIn= true}
     | AuthLoggedOut -> 
-        {state with Route=route; Screen= WelcomeScreen}
+        {state with IsLoggedIn= false; Screen= WelcomeScreen}
 
 
 let routeForState state = state.Route

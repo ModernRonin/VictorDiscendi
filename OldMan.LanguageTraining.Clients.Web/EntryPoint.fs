@@ -14,7 +14,6 @@ let Main () =
 
     App.CreatePaged (Site.init()) Site.update Site.pageFor
     |> App.WithCustomRouting router Site.routeForState Site.goto
-    |> App.WithInitMessage Site.SetupAuth
 #if DEBUG
     |> App.WithLocalStorage "VictorDiscendisDev"
     |> App.WithRemoteDev (RemoteDev.Options(hostname = "localhost", port = 8000))
