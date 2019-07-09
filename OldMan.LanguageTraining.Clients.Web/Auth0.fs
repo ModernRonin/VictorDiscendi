@@ -77,7 +77,10 @@ let private ensureClient()=
 
 let private updateAuthenticationStatus()= 
     async {
+        Console.Log "ensuring auth client"
         let! auth= ensureClient()
+        Console.Log "checking login status"
+        Console.Log auth
         let! result= auth.IsLoggedIn().AsAsync()
         _isLoggedIn <- result
         Console.Log ("isLoggedIn: " + string result)
