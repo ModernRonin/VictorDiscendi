@@ -10,3 +10,5 @@ let login(): Promise<unit>= X<_>
 let logout(): Promise<unit>= X<_>
 [<Direct("AuthJS.getIsLoggedIn()")>]
 let isLoggedIn(): bool= X<_>
+[<Direct("AuthJS.onPageLoad()")>]
+let onLoad(): Promise<unit>= X<_>

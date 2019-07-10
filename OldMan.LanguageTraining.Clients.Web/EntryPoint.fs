@@ -1,6 +1,7 @@
 ﻿module OldMan.LanguageTraining.Clients.Web
 
 open WebSharper
+open WebSharper.JavaScript
 open WebSharper.Mvu
 open WebSharper.Sitelets.InferRouter
 open WebSharper.UI
@@ -11,9 +12,10 @@ open OldMan.LanguageTraining.Web
 [<SPAEntryPoint>]
 let Main () =
     let router = Router.Infer<Site.Route>()
-
+    let onLoad= CommandAsync (fun _ -> Authentication.onLoad().AsAsync())
     App.CreatePaged (Site.init()) Site.update Site.pageFor
     |> App.WithCustomRouting router Site.routeForState Site.goto
+    |> App.WithInitAction onLoad
 #if DEBUG
     |> App.WithLocalStorage "VictorDiscendisDev"
     |> App.WithRemoteDev (RemoteDev.Options(hostname = "localhost", port = 8000))

@@ -58,9 +58,9 @@ let update msg (state: State) : Action<Message, State> =
         SetModel {state with TagList=updatedTagList}
     | Login -> CommandAsync(fun _ -> Authentication.login().AsAsync())
     | Logout -> 
-        Authentication.logout() |> ignore
-        Action.DoNothing
-        //CommandAsync(fun _ -> Authentication.logout().AsAsync())
+        //Authentication.logout() |> ignore
+        //Action.DoNothing
+        CommandAsync(fun _ -> Authentication.logout().AsAsync())
 
 let render (dispatch: Message Dispatch) (state: View<State>)=
     let notice state= 
