@@ -83,12 +83,12 @@ let render (dispatch: Message Dispatch) (state: View<State>)=
         | TagListScreen ->
             delegateToComponent Tags.render (fun s -> s.TagList) (fun m -> TagListMessage m)
 
-
+    
     Templates.Menu()
         .Login(fun _ -> dispatch Login)
         .Logout(fun _ -> dispatch Logout)
-        //.LoginAttributes(state.V |> isLoggedIn |> hiddenIf)
-        //.LogoutAttributes(state.V |> visibleIfLoggedIn)
+        .LoginAttributes(Attr.ClassPred "hidden" state.V.IsLoggedIn)
+        .LogoutAttributes(Attr.ClassPred "hidden" (not state.V.IsLoggedIn)) 
         .LoginStateNotice(state.V |> notice)
         .Screen((V (state.V)).Doc renderScreen)
         .Doc()
