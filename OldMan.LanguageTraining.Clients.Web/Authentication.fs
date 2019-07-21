@@ -8,6 +8,21 @@ open WebSharper.UI.Client
 
 open OldMan.LanguageTraining.Web
 
+[<Stub>]
+type UserInformation= 
+    {
+        [<Name("nickname")>]
+        Nickname: string
+        [<Name("name")>]
+        Name: string
+        [<Name("picture")>]
+        ImageUrl: string
+        [<Name("email")>]
+        Email: string
+        [<Name("email_verified")>]
+        IsEmailVerified: bool
+    }
+
 [<Inline("AuthJS.login()")>]
 let private doLogin(): Promise<unit>= X<_>
 [<Inline("AuthJS.logout()")>]
@@ -16,6 +31,8 @@ let private doLogout(): Promise<unit>= X<_>
 let private isLoggedIn(): bool= X<_>
 [<Direct("AuthJS.onPageLoad()")>]
 let private onPageLoad(): Promise<unit>= X<_>
+[<Direct("AuthJS.getUserInfo()")>]
+let private getUserInfo(): UserInformation= X<_>
 
 type Message=
     | UpdateLoggedInStatus of bool
@@ -49,11 +66,13 @@ let checkForCallback()= CommandAsync onLoad
 let updateState isLoggedIn=
     match isLoggedIn with
     | false -> init()
-    | true -> {
-                IsLoggedIn= true
-                Username="someone"
-                ImageUrl=""
-              }
+    | true ->
+        let userInfo= getUserInfo()
+        {
+            IsLoggedIn= true
+            Username= userInfo.Name
+            ImageUrl= userInfo.ImageUrl
+        }
 
 
 

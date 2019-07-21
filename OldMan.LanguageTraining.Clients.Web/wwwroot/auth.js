@@ -5,6 +5,7 @@
 
 let auth0 = null;
 let isAuthenticated = false;
+let userInfo = null;
 
 
 const configureClient = async () => {
@@ -28,9 +29,14 @@ const logout = () => {
 
 const updateAuthenticationStatus = async () => {
     isAuthenticated = await auth0.isAuthenticated();
+    if (isAuthenticated) {
+        userInfo = await auth0.getUser();
+    }
 };
 
 const getIsLoggedIn = () => isAuthenticated;
+
+const getUserInfo = () => userInfo;
 
 const onLoad = async () => {
     await configureClient();
@@ -52,5 +58,6 @@ var AuthJS = {
     login: login,
     logout: logout,
     getIsLoggedIn: getIsLoggedIn,
-    onPageLoad: onLoad
+    onPageLoad: onLoad,
+    getUserInfo: getUserInfo
 };

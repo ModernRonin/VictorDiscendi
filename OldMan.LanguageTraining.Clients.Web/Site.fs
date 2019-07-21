@@ -52,7 +52,7 @@ let tagsDispatch dispatch msg=
     Utilities.subDispatch wrap dispatch msg
 
 let update msg (state: State) : Action<Message, State> =
-    match msg with
+    match msg with  
     | TagListMessage m -> 
         let updatedTagList= Tags.update m state.TagList
         SetModel {state with TagList=updatedTagList}
