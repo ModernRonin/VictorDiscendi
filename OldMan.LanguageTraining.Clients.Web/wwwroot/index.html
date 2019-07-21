@@ -18,10 +18,13 @@
 <body>
 
     <div id="site">
-        <div ws-template="Menu">
+        <div ws-template="UserInfo">
             <span>${LoginStateNotice}</span>
             <button ws-onclick="Login" ws-attr="LoginAttributes">Login</button>
             <button ws-onclick="Logout" ws-attr="LogoutAttributes">Logout</button>
+        </div>
+        <div ws-template="Menu">
+            <div ws-hole="UserInfo"></div>
             <ul>
                 <li>
                     <a href="#/tags">Tag List</a>
