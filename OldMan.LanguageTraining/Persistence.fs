@@ -79,19 +79,22 @@ module private Serialization=
             }
 
         static member Deserialize tagsLoader (pair: SerializablePair) =
-            {
-                Id = pair.Id |> Id.Deserialize
-                Left= pair.Left |> Word.Deserialize
-                Right= pair.Right |> Word.Deserialize
-                Created = pair.Created |> DateTime.Deserialize
-                Tags = tagsLoader pair.Id
-                ScoreCard= 
-                    {
-                        LastAsked=  pair.LastAsked |> DateTime.Deserialize
-                        TimesAsked= pair.TimesAsked |> Count.Deserialize
-                        LeftScore= pair.LeftScore |> Score.Deserialize
-                        RightScore= pair.RightScore |> Score.Deserialize
-                    }
+            async {
+                let! tags= tagsLoader pair.Id
+                return {
+                    Id = pair.Id |> Id.Deserialize
+                    Left= pair.Left |> Word.Deserialize
+                    Right= pair.Right |> Word.Deserialize
+                    Created = pair.Created |> DateTime.Deserialize
+                    Tags = tags
+                    ScoreCard= 
+                        {
+                            LastAsked=  pair.LastAsked |> DateTime.Deserialize
+                            TimesAsked= pair.TimesAsked |> Count.Deserialize
+                            LeftScore= pair.LeftScore |> Score.Deserialize
+                            RightScore= pair.RightScore |> Score.Deserialize
+                        }
+                }
             }
 
     type Tag with
@@ -116,84 +119,118 @@ module private Serialization=
 open Serialization
 type Persistence(store: IPersistenceStore)=
         let createPair (pair: WordPair)= 
-            let existing= store.loadPairs()
-            let nextId=  Id.nextAfter existing
-            let result= {pair with Id=nextId}.Serialize()
-            let updated= result |> List.singleton |> List.append existing
-            store.savePairs updated
-            result
+            async {
+                let!existing= store.loadPairs()
+                let nextId=  Id.nextAfter existing
+                let result= {pair with Id=nextId}.Serialize()
+                let updated= result |> List.singleton |> List.append existing
+                do! store.savePairs updated
+                return result
+            }
     
         let editPair (nu: WordPair)=
-            let newRecord= nu.Serialize()
-            let existingWithoutOld= store.loadPairs() |> List.filter (fun p -> p.Id<>nu.Id.Serialize())
-            newRecord :: existingWithoutOld |> store.savePairs
+            async {
+                let newRecord= nu.Serialize()
+                let! existing= store.loadPairs()
+                let existingWithoutOld= existing |> List.filter (fun p -> p.Id<>nu.Id.Serialize())
+                do! newRecord :: existingWithoutOld |> store.savePairs
+            }
             
         let getTagIds (tags: Tag list)=
-            let existing= store.loadTags() 
-            let doesNotExistYet (t:Tag) = existing |> List.exists (fun e -> e.Id=t.Id.Serialize()) |> not
-            let (newTags, keptTags)= tags |> List.partition doesNotExistYet
-            let nextId= Id.nextAfter existing
-            let assignNextId (index, tag): Tag = {tag with Id=nextId.AddDelta index}
-            let newTagsWithIds= newTags |> List.indexed |> List.map assignNextId
-            let removed= keptTags |> List.map (fun t -> t.Serialize()) |> List.except <| existing
-            let updated= newTagsWithIds |> List.map (fun t -> t.Serialize()) |> List.append existing
-            store.saveTags updated
-            updated  |> List.except removed |> List.map Id.fromRaw |> List.map Id.unwrap 
-    
+            async {
+                let! existing= store.loadTags() 
+                let doesNotExistYet (t:Tag) = existing |> List.exists (fun e -> e.Id=t.Id.Serialize()) |> not
+                let (newTags, keptTags)= tags |> List.partition doesNotExistYet
+                let nextId= Id.nextAfter existing
+                let assignNextId (index, tag): Tag = {tag with Id=nextId.AddDelta index}
+                let newTagsWithIds= newTags |> List.indexed |> List.map assignNextId
+                let removed= keptTags |> List.map (fun t -> t.Serialize()) |> List.except <| existing
+                let updated= newTagsWithIds |> List.map (fun t -> t.Serialize()) |> List.append existing
+                do! store.saveTags updated
+                return updated  |> List.except removed |> List.map Id.fromRaw |> List.map Id.unwrap 
+            }    
         let removeTags tagIds= 
-            let existing= store.loadTags()
-            let shouldBeKept (t: SerializableTag) = tagIds |> List.contains t.Id |> not
-            let updated= existing |> List.filter shouldBeKept
-            updated |> store.saveTags
+            async {
+                let! existing= store.loadTags()
+                let shouldBeKept (t: SerializableTag) = tagIds |> List.contains t.Id |> not
+                let updated= existing |> List.filter shouldBeKept
+                do! updated |> store.saveTags
+            }
     
         let updateAssociations pairId tagIds=
-            let nu= tagIds |> List.map (fun tagId -> serializePairTagAssociation pairId tagId)
-            let old= store.loadAssociations()
-            let (oldForPair, toKeep) = old |> List.partition (fun a -> a.PairId=pairId)
-            nu |> List.append <| toKeep |> store.saveAssociations
-            let deletedIds= oldForPair |> List.map (fun a -> a.TagId) |> List.except tagIds
-            let isNotInUse tagId= toKeep |> List.map (fun a -> a.TagId) |> List.contains tagId |> not
-            deletedIds |>  List.filter isNotInUse |> removeTags
-    
+            async {
+                let nu= tagIds |> List.map (fun tagId -> serializePairTagAssociation pairId tagId)
+                let! old= store.loadAssociations()
+                let (oldForPair, toKeep) = old |> List.partition (fun a -> a.PairId=pairId)
+                do! nu |> List.append <| toKeep |> store.saveAssociations
+                let deletedIds= oldForPair |> List.map (fun a -> a.TagId) |> List.except tagIds
+                let isNotInUse tagId= toKeep |> List.map (fun a -> a.TagId) |> List.contains tagId |> not
+                do! deletedIds |>  List.filter isNotInUse |> removeTags
+            }
+
         let getAssociatedTags pairId=
-            let tagIds= store.loadAssociations() |> List.filter (fun a -> a.PairId=pairId) |> List.map (fun a -> a.TagId) |> Set.ofList
-            store.loadTags() |> List.filter (fun t -> tagIds.Contains t.Id) |> List.map Tag.Deserialize
-    
-        let deserializePair = WordPair.Deserialize getAssociatedTags
+            async {
+                let! associations= store.loadAssociations()
+                let tagIds= associations |> List.filter (fun a -> a.PairId=pairId) |> List.map (fun a -> a.TagId) |> Set.ofList
+                let! tags= store.loadTags()
+                return tags |> List.filter (fun t -> tagIds.Contains t.Id) |> List.map Tag.Deserialize
+            }
+
+        let deserializePair = 
+            WordPair.Deserialize getAssociatedTags
     
         member this.UpdateConfiguration(config: LanguageConfiguration)= 
             config.Serialize() |> store.saveConfig 
             
         member this.GetConfiguration()=  
-            store.loadConfig() |> LanguageConfiguration.Deserialize
+            async {
+                let! cfg= store.loadConfig()
+                return cfg |> LanguageConfiguration.Deserialize
+            }
     
         member this.AddPair pair = 
-            let result= createPair pair
-            let tagIds= getTagIds pair.Tags
-            updateAssociations result.Id tagIds
-            result |> deserializePair
+            async{
+                let! result= createPair pair
+                let! tagIds= getTagIds pair.Tags
+                do! updateAssociations result.Id tagIds
+                return result |> deserializePair
+            }
     
         member this.UpdatePair newPair=
-            editPair newPair
-            let tagIds= getTagIds newPair.Tags
-            updateAssociations (newPair.Id.Serialize()) tagIds
+            async {
+                do! editPair newPair
+                let! tagIds= getTagIds newPair.Tags
+                do! updateAssociations (newPair.Id.Serialize()) tagIds
+            }
       
-        member this.GetPairs() = store.loadPairs() |> List.map deserializePair
+        member this.GetPairs() = 
+            async {
+                let! pairs= store.loadPairs() 
+                return pairs |> List.map deserializePair
+            }
     
-        member this.GetTags() = store.loadTags() |> List.map Tag.Deserialize |> List.distinct
-            
+        member this.GetTags() = 
+            async {
+                let! tags= store.loadTags() 
+                return tags |> List.map Tag.Deserialize |> List.distinct
+            }
         member this.AddOrUpdateTag (newTag: Tag) = 
             let add()=
-                let existing= store.loadTags() 
-                let id= Id.nextAfter existing
-                let result= {newTag with Id= id}
-                result.Serialize() :: existing |> store.saveTags
-                result
+                async {
+                    let! existing= store.loadTags() 
+                    let id= Id.nextAfter existing
+                    let result= {newTag with Id= id}
+                    do! result.Serialize() :: existing |> store.saveTags
+                    return result
+                }
             let update()= 
-                let serialized= newTag.Serialize()
-                let others= store.loadTags() |> List.filter (fun t -> t.Id<>serialized.Id)
-                serialized :: others |> store.saveTags
-                newTag
+                async {
+                    let serialized= newTag.Serialize()
+                    let! tags= store.loadTags()
+                    let others= tags |> List.filter (fun t -> t.Id<>serialized.Id)
+                    do! serialized :: others |> store.saveTags
+                    return newTag
+                }
                 
             if newTag.Id=Id.uninitialized then add() else update()
     

@@ -1,7 +1,5 @@
 ﻿namespace OldMan.LanguageTraining
 
-open OldMan.LanguageTraining.Domain
-
 type SerializableConfiguration=
     {
         LeftName: string
@@ -33,11 +31,11 @@ type SerializableTagPairAssociation=
     }
 
 type IPersistenceStore=
-    abstract member loadPairs: unit -> SerializablePair list
-    abstract member loadTags: unit -> SerializableTag list
-    abstract member loadAssociations: unit -> SerializableTagPairAssociation list
-    abstract member loadConfig: unit -> SerializableConfiguration
-    abstract member savePairs: SerializablePair list -> unit
-    abstract member saveTags: SerializableTag list -> unit
-    abstract member saveAssociations: SerializableTagPairAssociation list -> unit
-    abstract member saveConfig: SerializableConfiguration -> unit
+    abstract member loadPairs: unit -> Async<SerializablePair list>
+    abstract member loadTags: unit -> Async<SerializableTag list>
+    abstract member loadAssociations: unit -> Async<SerializableTagPairAssociation list>
+    abstract member loadConfig: unit -> Async<SerializableConfiguration>
+    abstract member savePairs: SerializablePair list -> Async<unit>
+    abstract member saveTags: SerializableTag list -> Async<unit>
+    abstract member saveAssociations: SerializableTagPairAssociation list -> Async<unit>
+    abstract member saveConfig: SerializableConfiguration -> Async<unit>

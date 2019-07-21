@@ -77,7 +77,6 @@ let render (dispatch: Message Dispatch) (state: View<State>)=
         | TagListScreen -> dispatch |> tagsDispatch |> Tags.render <| cachedTags
 
     let renderAuth() = dispatch |> authDispatch |> Authentication.render <| cachedUserInfo
-
     Templates.Menu()
         .UserInfo(renderAuth().Doc())
         .Screen(state.Doc renderScreen)
