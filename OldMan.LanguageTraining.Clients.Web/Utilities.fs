@@ -11,7 +11,7 @@ module Utilities=
     let hiddenIf (condition: View<bool>)= 
         Attr.DynamicClassPred "hidden" condition
     let visibleIf (condition: View<bool>)= 
-        condition |> View.Map not |> hiddenIf
+        condition |> View.MapCached not |> hiddenIf
 
         
     let subDispatch wrapper dispatch msg =

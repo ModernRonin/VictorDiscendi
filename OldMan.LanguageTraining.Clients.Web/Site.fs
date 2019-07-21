@@ -68,13 +68,15 @@ let update msg (state: State) : Action<Message, State> =
         Authentication.processAuthMsg m useModel useCmd      
 
 let render (dispatch: Message Dispatch) (state: View<State>)=
+    let cachedTags= state |> View.MapCached (fun st -> st.TagList)
+    let cachedUserInfo = state |> View.MapCached (fun st -> st.UserInfo)
     let renderScreen (state: State)=
         match state.Screen with
         | WelcomeScreen -> Templates.Welcome().Doc()
         | OtherScreen -> Templates.Other().Doc()
-        | TagListScreen -> dispatch |> tagsDispatch |> Tags.render <| (V state.TagList)
+        | TagListScreen -> dispatch |> tagsDispatch |> Tags.render <| cachedTags
 
-    let renderAuth() = dispatch |> authDispatch |> Authentication.render <| (V state.V.UserInfo)
+    let renderAuth() = dispatch |> authDispatch |> Authentication.render <| cachedUserInfo
 
     Templates.Menu()
         .UserInfo(renderAuth().Doc())

@@ -37,8 +37,8 @@ let update msg state=
 
 let render (dispatch: Message Dispatch) (state: View<State>)=
     let renderTag id (view: View<Tag*int>)= 
-        let tagView= view |> View.Map (fun (t, _) -> t)
-        let countView= view |> View.Map(fun (_, c) -> c)
+        let tagView= view |> View.MapCached (fun (t, _) -> t)
+        let countView= view |> View.MapCached (fun (_, c) -> c)
         Templates.TagListRow()
             .Text(tagView.V.Text)
             .UsageCount(string countView.V)
