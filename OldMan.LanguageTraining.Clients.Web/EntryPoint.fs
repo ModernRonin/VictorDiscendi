@@ -12,14 +12,13 @@ open OldMan.LanguageTraining.Web
 [<SPAEntryPoint>]
 let Main () =
     let router = Router.Infer<Site.Route>()
-    let onLoad= CommandAsync (fun (dispatch: Site.Message Dispatch) -> 
-                                let d1 m= dispatch (Site.AuthMessage m)
-                                Authentication.onLoad(d1))
+    let ol dispatch= dispatch |> Site.authDispatch |> Authentication.onLoad
+
     App.CreatePaged (Site.init()) Site.update Site.pageFor
     |> App.WithCustomRouting router Site.routeForState Site.goto
-    |> App.WithInitAction onLoad
+    |> App.WithInitAction (CommandAsync ol)
 #if DEBUG
-    |> App.WithLocalStorage "VictorDiscendisDev"
+    //|> App.WithLocalStorage "VictorDiscendisDev"
     |> App.WithRemoteDev (RemoteDev.Options(hostname = "localhost", port = 8000))
 #endif
     |> App.Run
