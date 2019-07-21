@@ -1,5 +1,10 @@
 ------------NEXT QUESTIONS------------
 add auth0 login
+	* display login state
+	* display username
+	* make user return to current page after login (instead of home)
+	* make login/logout visible depending on login state
+	* test token refresh/timout
 
 switch to async for persistence
 add loading delay and disable refresh button while refreshing is underway
@@ -24,8 +29,6 @@ set up continuous deployment
 
 
 edit a tag (forms, UI changes to data (is that what reactive vars are for?))
-
-find out whether there is a more flexible/custom way to map url endpoints than the attributes on the pages and router.infer
 
 maybe just implement the whole thing in pure html, and only afterwards move to CSS
 setup bulma

@@ -8,8 +8,11 @@
     <WebSharperSourceMap Condition=" '$(Configuration)' == 'Debug' ">True</WebSharperSourceMap>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Api.fs" />
+    <Compile Include="Utilities.fs" />
     <Compile Include="Templating.fs" />
+    <Compile Include="Authentication.fs" />
+    <Compile Include="Networking.fs" />
+    <Compile Include="Api.fs" />
     <Compile Include="Tags.fs" />
     <Compile Include="Site.fs" />
     <Compile Include="EntryPoint.fs" />
