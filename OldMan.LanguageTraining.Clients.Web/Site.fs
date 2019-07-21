@@ -58,30 +58,26 @@ let update msg (state: State) : Action<Message, State> =
     | TagListMessage m -> 
         let updatedTagList= Tags.update m state.TagList
         SetModel {state with TagList=updatedTagList}
+
     | AuthMessage m ->
-        let useCmd (cmd: Dispatch<Authentication.Message> -> Async<unit>)=
-            let runCmd (dispatch: Message Dispatch)=
-                cmd (authDispatch dispatch)
+        let useCmd cmd=
+            let runCmd dispatch= cmd (authDispatch dispatch)
             (CommandAsync runCmd)
-        let useModel userInfo=
-            SetModel {state with UserInfo=userInfo}
+        let useModel userInfo= SetModel {state with UserInfo=userInfo}
+
         Authentication.processAuthMsg m useModel useCmd      
 
 let render (dispatch: Message Dispatch) (state: View<State>)=
-    let authDispatch = authDispatch dispatch
-    let tagsDispatch = tagsDispatch dispatch
-
     let renderScreen (state: State)=
         match state.Screen with
         | WelcomeScreen -> Templates.Welcome().Doc()
         | OtherScreen -> Templates.Other().Doc()
-        | TagListScreen ->
-            Tags.render tagsDispatch (V state.TagList)
+        | TagListScreen -> dispatch |> tagsDispatch |> Tags.render <| (V state.TagList)
 
-    let renderAuth= 
-        (Authentication.render authDispatch (V state.V.UserInfo)).Doc()
+    let renderAuth() = dispatch |> authDispatch |> Authentication.render <| (V state.V.UserInfo)
+
     Templates.Menu()
-        .UserInfo(renderAuth)
+        .UserInfo(renderAuth().Doc())
         .Screen(state.Doc renderScreen)
         .Doc()
 
