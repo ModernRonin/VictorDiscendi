@@ -54,9 +54,8 @@ let update msg (state: State) : Action<Message, State> =
     | TagListMessage m -> 
         let updatedTagList= Tags.update m state.TagList
         SetModel {state with TagList=updatedTagList}
-    | Login -> CommandAsync(fun _ -> Authentication.login().AsAsync())
-    | Logout -> 
-        CommandAsync(fun _ -> Authentication.logout().AsAsync())
+    | Login -> Authentication.login()
+    | Logout -> Authentication.logout()
     | AuthMessage m ->
         match m with
         | Authentication.UpdateLoggedInStatus isLoggedIn ->

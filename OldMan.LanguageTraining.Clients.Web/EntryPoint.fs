@@ -14,7 +14,7 @@ let Main () =
     let router = Router.Infer<Site.Route>()
     let onLoad= CommandAsync (fun (dispatch: Site.Message Dispatch) -> 
                                 let d1 m= dispatch (Site.AuthMessage m)
-                                Authentication.onLoad(d1))
+                                Authentication.update(d1))
     App.CreatePaged (Site.init()) Site.update Site.pageFor
     |> App.WithCustomRouting router Site.routeForState Site.goto
     |> App.WithInitAction onLoad
