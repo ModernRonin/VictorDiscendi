@@ -43,6 +43,14 @@ type Message =
     | TagListMessage of Tags.Message
     | AuthMessage of Authentication.Message
 
+let authDispatch dispatch msg= 
+    let wrap msg= (AuthMessage msg)
+    Utilities.subDispatch wrap dispatch msg
+
+let tagsDispatch dispatch msg=
+    let wrap msg= (TagListMessage msg)
+    Utilities.subDispatch wrap dispatch msg
+
 let update msg (state: State) : Action<Message, State> =
     match msg with
     | TagListMessage m -> 
@@ -54,26 +62,25 @@ let update msg (state: State) : Action<Message, State> =
         | Authentication.Logout -> Authentication.logout()
         | Authentication.CheckForCallbacks -> 
             let onLoad (dispatch: Message Dispatch)=
-                Authentication.onLoad (fun m2 -> dispatch (AuthMessage m2))
+                Authentication.onLoad (authDispatch dispatch)
             CommandAsync onLoad
         | Authentication.UpdateLoggedInStatus isLoggedIn ->
             let userInfo= Authentication.updateState isLoggedIn
             SetModel {state with UserInfo=userInfo}
 
 let render (dispatch: Message Dispatch) (state: View<State>)=
+    let authDispatch = authDispatch dispatch
+    let tagsDispatch = tagsDispatch dispatch
+
     let renderScreen (state: State)=
-        let delegateToComponent renderer stateExtractor transformer=
-            let subDispatch msg = dispatch (transformer msg)
-            renderer subDispatch (View.Const (stateExtractor state))
         match state.Screen with
         | WelcomeScreen -> Templates.Welcome().Doc()
         | OtherScreen -> Templates.Other().Doc()
         | TagListScreen ->
-            delegateToComponent Tags.render (fun s -> s.TagList) (fun m -> TagListMessage m)
+            Tags.render tagsDispatch (View.Const (state.TagList))
 
-    let d2 m= dispatch (AuthMessage m)
     let renderAuth= 
-        (Authentication.render d2 (V (state.V.UserInfo))).Doc()
+        (Authentication.render authDispatch (V (state.V.UserInfo))).Doc()
     Templates.Menu()
         .UserInfo(renderAuth)
         .Screen((V (state.V)).Doc renderScreen)

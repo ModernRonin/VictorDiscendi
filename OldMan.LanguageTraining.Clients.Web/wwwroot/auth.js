@@ -22,7 +22,7 @@ const login = async () => {
 
 const logout = () => {
     auth0.logout({
-        returnTo: window.location.origin + "/#/auth/loggedout"
+        returnTo: window.location.origin
     });
 };
 

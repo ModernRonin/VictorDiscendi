@@ -1,7 +1,6 @@
 ﻿namespace OldMan.LanguageTraining.Web
 
-[<AutoOpen>]
-module Utilties=
+module Utilities=
     open WebSharper
     open WebSharper.JavaScript
     open WebSharper.UI
@@ -12,3 +11,5 @@ module Utilties=
     let visibleIf condition= not condition |> hiddenIf
 
         
+    let subDispatch wrapper dispatch msg =
+        msg |> wrapper |> dispatch
