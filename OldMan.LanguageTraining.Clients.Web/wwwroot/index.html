@@ -15,56 +15,57 @@
     <script type="text/javascript" src="https://cdn.auth0.com/js/auth0-spa-js/1.0/auth0-spa-js.production.js"></script>
     <script type="text/javascript" src="auth.js"></script>
 </head>
-<body id="site">
+<body>
 
-    <div ws-template="Menu">
-        <span>${LoginStateNotice}</span>
-        <button ws-onclick="Login" ws-attr="LoginAttributes">Login</button>
-        <button ws-onclick="Logout" ws-attr="LogoutAttributes">Logout</button>
-        <ul>
-            <li>
-                <a href="#/tags">Tag List</a>
-            </li>
-            <li>
-                <a href="#/other">Other</a>
-            </li>
-        </ul>
-        <div ws-hole="Screen"></div>
+    <div id="site">
+        <div ws-template="Menu">
+            <span>${LoginStateNotice}</span>
+            <button ws-onclick="Login" ws-attr="LoginAttributes">Login</button>
+            <button ws-onclick="Logout" ws-attr="LogoutAttributes">Logout</button>
+            <ul>
+                <li>
+                    <a href="#/tags">Tag List</a>
+                </li>
+                <li>
+                    <a href="#/other">Other</a>
+                </li>
+            </ul>
+            <div ws-hole="Screen"></div>
+        </div>
+
+        <div ws-template="Welcome">
+            <h1>Welcome to Victor Discendis</h1>
+        </div>
+
+        <div ws-template="Other">
+            <h1>Other</h1>
+            <a href="#">back to Welcome</a>
+        </div>
+
+        <div ws-template="TagList">
+            <h1>Tag List</h1>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Used</th>
+                    </tr>
+                </thead>
+                <tbody ws-hole="Body">
+                    <tr ws-template="Row">
+                        <td>
+                            <b>${Text}</b>
+                        </td>
+                        <td>(${UsageCount})</td>
+                        <td>
+                            <button ws-onclick="Delete" ws-attr="DeleteAttributes">Delete</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <button ws-onclick="Refresh" ws-attr="RefreshAttributes">Refresh</button>
+        </div>
     </div>
-
-    <div ws-template="Welcome">
-        <h1>Welcome to Victor Discendis</h1>
-    </div>
-
-    <div ws-template="Other">
-        <h1>Other</h1>
-        <a href="#">back to Welcome</a>
-    </div>
-
-    <div ws-template="TagList">
-        <h1>Tag List</h1>
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Used</th>
-                </tr>
-            </thead>
-            <tbody ws-hole="Body">
-                <tr ws-template="Row">
-                    <td>
-                        <b>${Text}</b>
-                    </td>
-                    <td>(${UsageCount})</td>
-                    <td>
-                        <button ws-onclick="Delete" ws-attr="DeleteAttributes">Delete</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-        <button ws-onclick="Refresh" ws-attr="RefreshAttributes">Refresh</button>
-    </div>
-
     <script type="text/javascript" src="Content/OldMan.LanguageTraining.Clients.Web.js"></script>
 </body>
 </html>

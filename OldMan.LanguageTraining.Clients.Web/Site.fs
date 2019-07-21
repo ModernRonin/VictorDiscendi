@@ -47,9 +47,7 @@ type Message =
     | TagListMessage of Tags.Message
     | Login
     | Logout
-
-let updateLoginStatus state= 
-    {state with IsLoggedIn= Authentication.isLoggedIn()}
+    | AuthMessage of Authentication.Message
 
 let update msg (state: State) : Action<Message, State> =
     match msg with
@@ -58,20 +56,17 @@ let update msg (state: State) : Action<Message, State> =
         SetModel {state with TagList=updatedTagList}
     | Login -> CommandAsync(fun _ -> Authentication.login().AsAsync())
     | Logout -> 
-        //Authentication.logout() |> ignore
-        //Action.DoNothing
         CommandAsync(fun _ -> Authentication.logout().AsAsync())
+    | AuthMessage m ->
+        match m with
+        | Authentication.UpdateLoggedInStatus isLoggedIn ->
+            SetModel {state with IsLoggedIn=isLoggedIn}
 
 let render (dispatch: Message Dispatch) (state: View<State>)=
     let notice state= 
         match state.IsLoggedIn with
         | true -> sprintf "Welcome, %s!" state.Username
         | false ->  "Please login!"
-    let inline isLoggedIn state= state.IsLoggedIn  
-    let visibleIfLoggedIn state=
-        match state.IsLoggedIn with
-        | true -> Attr.ClassPred "hidden" false
-        | false -> Attr.ClassPred "hidden" true
 
     let renderScreen (state: State)=
         let delegateToComponent renderer stateExtractor transformer=

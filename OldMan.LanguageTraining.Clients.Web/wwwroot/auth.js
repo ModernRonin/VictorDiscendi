@@ -16,7 +16,7 @@ const configureClient = async () => {
 
 const login = async () => {
     await auth0.loginWithRedirect({
-        redirect_uri: window.location.origin + "/#/auth/loggedin"
+        redirect_uri: window.location.origin
     });
 };
 
@@ -33,16 +33,8 @@ const updateAuthenticationStatus = async () => {
 const getIsLoggedIn = () => isAuthenticated;
 
 const onLoad = async () => {
-    console.log("onLoad");
-    try {
-        console.log("configuring");
-        await configureClient();
-        console.log("updating");
-        await updateAuthenticationStatus();
-        console.log(auth0);
-    } catch (e) {
-        console.error(e);
-    }
+    await configureClient();
+    await updateAuthenticationStatus();
 
     if (isAuthenticated) {
         return;
@@ -50,15 +42,9 @@ const onLoad = async () => {
 
     const query = window.location.search;
     if (query.includes("code=") && query.includes("state=")) {
-        try {
-
-            await auth0.handleRedirectCallback();
-            await updateAuthenticationStatus();
-        } catch (e) {
-            console.error(e);
-        }
-
-        window.history.replaceState({}, document.title, "/#/auth/loggedin");
+        await auth0.handleRedirectCallback();
+        await updateAuthenticationStatus();
+        window.history.replaceState({}, document.title, "/");
     }
 };
 
