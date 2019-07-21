@@ -51,22 +51,21 @@ let tagsDispatch dispatch msg=
     let wrap msg= (TagListMessage msg)
     Utilities.subDispatch wrap dispatch msg
 
+
+
 let update msg (state: State) : Action<Message, State> =
     match msg with  
     | TagListMessage m -> 
         let updatedTagList= Tags.update m state.TagList
         SetModel {state with TagList=updatedTagList}
     | AuthMessage m ->
-        match m with 
-        | Authentication.Login -> Authentication.login()
-        | Authentication.Logout -> Authentication.logout()
-        | Authentication.CheckForCallbacks -> 
-            let onLoad (dispatch: Message Dispatch)=
-                Authentication.onLoad (authDispatch dispatch)
-            CommandAsync onLoad
-        | Authentication.UpdateLoggedInStatus isLoggedIn ->
-            let userInfo= Authentication.updateState isLoggedIn
+        let useCmd (cmd: Dispatch<Authentication.Message> -> Async<unit>)=
+            let runCmd (dispatch: Message Dispatch)=
+                cmd (authDispatch dispatch)
+            (CommandAsync runCmd)
+        let useModel userInfo=
             SetModel {state with UserInfo=userInfo}
+        Authentication.processAuthMsg m useModel useCmd      
 
 let render (dispatch: Message Dispatch) (state: View<State>)=
     let authDispatch = authDispatch dispatch

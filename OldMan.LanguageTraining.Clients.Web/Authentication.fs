@@ -87,6 +87,16 @@ let update msg _=
     | UpdateLoggedInStatus isLoggedIn ->
         SetModel (updateState isLoggedIn)
 
+// temporary solution until we know the answer to the question above
+let processAuthMsg msg useState useAsyncCommand =
+    match msg with
+    | Login -> login()
+    | Logout -> logout()
+    | CheckForCallbacks -> useAsyncCommand onLoad
+    | UpdateLoggedInStatus isLoggedIn -> isLoggedIn |> updateState |> useState
+
+
+
 let render (dispatch: Message Dispatch) (state: View<State>)=
     let notice state= 
         match state.IsLoggedIn with
