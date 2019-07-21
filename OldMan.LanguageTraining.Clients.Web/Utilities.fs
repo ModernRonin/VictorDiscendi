@@ -1,5 +1,6 @@
 ﻿namespace OldMan.LanguageTraining.Web
 
+[<AutoOpen>]
 module Utilities=
     open WebSharper
     open WebSharper.JavaScript
@@ -7,8 +8,10 @@ module Utilities=
     open WebSharper.UI.Client
     open WebSharper.Mvu
     
-    let hiddenIf condition= condition |> Attr.ClassPred "hidden" 
-    let visibleIf condition= not condition |> hiddenIf
+    let hiddenIf (condition: View<bool>)= 
+        Attr.DynamicClassPred "hidden" condition
+    let visibleIf (condition: View<bool>)= 
+        condition |> View.Map not |> hiddenIf
 
         
     let subDispatch wrapper dispatch msg =

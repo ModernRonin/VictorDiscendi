@@ -95,15 +95,13 @@ let render (dispatch: Message Dispatch) (state: View<State>)=
 
     let avatar=
         let imageSrc= Attr.Dynamic "src" (V state.V.ImageUrl)
-        let isHidden= Attr.DynamicClassPred "hidden" (V (not state.V.IsLoggedIn))
-        Attr.Append imageSrc isHidden
+        let isVisible= visibleIf (V state.V.IsLoggedIn)
+        Attr.Append imageSrc isVisible
 
     Templates.UserInfo()
         .Login(fun _ -> dispatch Login)
         .Logout(fun _ -> dispatch Logout)
         .LoginStateNotice(state.V |> notice)
-        .LoginAttributes(Attr.ClassPred "hidden" state.V.IsLoggedIn)
-        .LogoutAttributes(Attr.ClassPred "hidden" (not state.V.IsLoggedIn)) 
+        .LoginAttributes(hiddenIf (V state.V.IsLoggedIn))
+        .LogoutAttributes(visibleIf (V state.V.IsLoggedIn)) 
         .AvatarAttributes(avatar)
-        //.Avatar(state.V.ImageUrl)
-        //.AvatarVisibility(Attr.DynamicClassPred "hidden" (state |> View.Map (fun s -> not s.IsLoggedIn)))
