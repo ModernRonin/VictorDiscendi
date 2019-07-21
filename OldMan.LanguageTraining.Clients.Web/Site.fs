@@ -77,13 +77,13 @@ let render (dispatch: Message Dispatch) (state: View<State>)=
         | WelcomeScreen -> Templates.Welcome().Doc()
         | OtherScreen -> Templates.Other().Doc()
         | TagListScreen ->
-            Tags.render tagsDispatch (View.Const (state.TagList))
+            Tags.render tagsDispatch (V state.TagList)
 
     let renderAuth= 
-        (Authentication.render authDispatch (V (state.V.UserInfo))).Doc()
+        (Authentication.render authDispatch (V state.V.UserInfo)).Doc()
     Templates.Menu()
         .UserInfo(renderAuth)
-        .Screen((V (state.V)).Doc renderScreen)
+        .Screen(state.Doc renderScreen)
         .Doc()
 
 
