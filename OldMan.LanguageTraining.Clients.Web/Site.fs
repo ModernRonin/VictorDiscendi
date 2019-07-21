@@ -13,8 +13,6 @@ type Route=
     | [<EndPoint "/tags">] TagList
     | [<EndPoint "/">] Welcome
     | [<EndPoint "/other">] Other
-    | [<EndPoint "/auth/loggedin">] AuthLoggedIn
-    | [<EndPoint "/auth/loggedout">] AuthLoggedOut
 
 [<NamedUnionCases "type">]
 type Screen=
@@ -95,10 +93,6 @@ let goto (route: Route) (state: State) : State =
     | Welcome -> {state with Route=route; Screen= WelcomeScreen}
     | Other -> {state with Route=route; Screen= OtherScreen}
     | TagList -> {state with Route=route; Screen= TagListScreen; TagList= Tags.refresh()}
-    | AuthLoggedIn -> 
-        {state with IsLoggedIn= true}
-    | AuthLoggedOut -> 
-        {state with IsLoggedIn= false; Screen= WelcomeScreen}
 
 
 let routeForState state = state.Route

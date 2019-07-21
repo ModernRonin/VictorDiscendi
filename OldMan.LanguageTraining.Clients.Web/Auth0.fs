@@ -15,6 +15,8 @@ let private onPageLoad(): Promise<unit>= X<_>
 
 type Message=
     | UpdateLoggedInStatus of bool
+    | Login
+    | Logout
 
 let update (dispatch: Message Dispatch)= 
     async {
