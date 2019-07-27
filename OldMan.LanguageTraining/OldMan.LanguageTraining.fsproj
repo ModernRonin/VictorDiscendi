@@ -5,6 +5,7 @@
     <WebSharperSourceMap Condition=" '$(Configuration)' == 'Debug' ">True</WebSharperSourceMap>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="AsyncExtensions.fs" />
     <Compile Include="Id.fs" />
     <Compile Include="Word.fs" />
     <Compile Include="Score.fs" />

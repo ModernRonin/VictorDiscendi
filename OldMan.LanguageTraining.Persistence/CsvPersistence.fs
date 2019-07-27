@@ -1,6 +1,7 @@
 ﻿module OldMan.LanguageTraining.Persistence
 
 open FSharp.Data
+open OldMan
 open OldMan.LanguageTraining
 
 // CSV Types:
@@ -86,32 +87,35 @@ type CsvPersistenceStore(loader: Loader, saver: Saver)=
         | _ -> parse str
 
     interface IPersistenceStore with
-        member this.loadPairs()= Words |> loader |> safeParse CsvPair.ParseRows |> Array.map CsvPair.toSerializable |> List.ofArray
-        member this.loadTags()= Tagging |> loader |> safeParse CsvTag.ParseRows |> Array.map CsvTag.toSerializable |> List.ofArray
+        member this.loadPairs()= 
+                Words |> loader |> safeParse CsvPair.ParseRows |> Array.map CsvPair.toSerializable |> List.ofArray |> Async.from
+        member this.loadTags()= 
+                Tagging |> loader |> safeParse CsvTag.ParseRows |> Array.map CsvTag.toSerializable |> List.ofArray |> Async.from
         member this.loadAssociations()= 
             WordTagAssociation |> loader 
-            |> safeParse CsvTagPairAssociation.ParseRows 
-            |> Array.map CsvTagPairAssociation.toSerializable |> List.ofArray
+                    |> safeParse CsvTagPairAssociation.ParseRows 
+                    |> Array.map CsvTagPairAssociation.toSerializable 
+                    |> List.ofArray |> Async.from
 
         member this.savePairs pairs= 
             let csv= pairs |> List.map CsvPair.fromSerializable
-            (new CsvPair(csv)).SaveToString() |> saver Words 
+            (new CsvPair(csv)).SaveToString() |> saver Words |> Async.from
 
         member this.saveTags tags= 
             let csv= tags |> List.map CsvTag.fromSerializable
-            (new CsvTag(csv)).SaveToString() |> saver Tagging
+            (new CsvTag(csv)).SaveToString() |> saver Tagging |> Async.from
 
         member this.saveAssociations associations= 
             let csv= associations |> List.map CsvTagPairAssociation.fromSerializable
-            (new CsvTagPairAssociation(csv)).SaveToString() |> saver WordTagAssociation
+            (new CsvTagPairAssociation(csv)).SaveToString() |> saver WordTagAssociation |> Async.from
 
         member this.loadConfig()= 
             match Configuration |> loader |> safeParse CsvConfiguration.ParseRows |> List.ofArray with
-            | [] -> CsvConfiguration.Row("", "")
-            | head::_ -> head
-            |> CsvConfiguration.toSerializable
+                | [] -> CsvConfiguration.Row("", "")
+                | head::_ -> head
+                |> CsvConfiguration.toSerializable |> Async.from
 
         member this.saveConfig config= 
             let csv= config |> CsvConfiguration.fromSerializable |> Seq.singleton 
-            (new CsvConfiguration(csv)).SaveToString() |> saver Configuration
+            (new CsvConfiguration(csv)).SaveToString() |> saver Configuration  |> Async.from
     

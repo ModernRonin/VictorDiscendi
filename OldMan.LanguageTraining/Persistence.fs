@@ -128,14 +128,16 @@ type Persistence(store: IPersistenceStore)=
                 return result
             }
     
-        let editPair (nu: WordPair)=
+        let editPairs (nus: WordPair list)=
             async {
-                let newRecord= nu.Serialize()
+                let newRecords= nus |> List.map (fun p -> p.Serialize())
                 let! existing= store.loadPairs()
-                let existingWithoutOld= existing |> List.filter (fun p -> p.Id<>nu.Id.Serialize())
-                do! newRecord :: existingWithoutOld |> store.savePairs
+                let isIdOfUpdated id = newRecords |> List.exists (fun r -> r.Id=id)
+                let existingWithoutOld= existing |> List.filter (fun p -> p.Id |> isIdOfUpdated |> not )
+                let newAll= List.append newRecords existingWithoutOld
+                do! newAll |> store.savePairs
             }
-            
+
         let getTagIds (tags: Tag list)=
             async {
                 let! existing= store.loadTags() 
@@ -193,20 +195,24 @@ type Persistence(store: IPersistenceStore)=
                 let! result= createPair pair
                 let! tagIds= getTagIds pair.Tags
                 do! updateAssociations result.Id tagIds
-                return result |> deserializePair
+                return! (result |> deserializePair)
             }
     
         member this.UpdatePair newPair=
             async {
-                do! editPair newPair
+                do! newPair |> List.singleton |> editPairs
                 let! tagIds= getTagIds newPair.Tags
                 do! updateAssociations (newPair.Id.Serialize()) tagIds
             }
       
+        member this.UpdateScores(pairs: WordPair list)= 
+            pairs |> editPairs
+
         member this.GetPairs() = 
             async {
                 let! pairs= store.loadPairs() 
-                return pairs |> List.map deserializePair
+                let! result= pairs |> List.map deserializePair |> Async.Parallel
+                return result |> List.ofArray
             }
     
         member this.GetTags() = 
