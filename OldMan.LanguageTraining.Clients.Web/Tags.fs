@@ -13,9 +13,13 @@ type State=
         Tags: (Tag*int) list
     }
 let refresh()= 
-    {
-        Tags= Api.service().ListTags() 
-    }
+    async {
+        let! tags=  Api.service().ListTags()
+        return {
+            Tags= tags
+        }
+     }
+
 let delete id state=
     let without= state.Tags |> List.filter (fun (t, _) -> t.Id<>id)
     { state with Tags=without }
