@@ -1,0 +1,12 @@
+source https://api.nuget.org/v3/index.json
+
+nuget FSharp.Core
+nuget Bolero prerelease
+nuget Bolero.Build prerelease
+nuget Bolero.HotReload prerelease
+nuget Bolero.HotReload.Server prerelease
+nuget Bolero.Server prerelease
+nuget Microsoft.AspNetCore.Blazor.Build prerelease
+nuget Microsoft.AspNetCore.Blazor.DevServer prerelease
+nuget Microsoft.AspNetCore.Blazor.Server prerelease
+nuget Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation
