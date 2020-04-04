@@ -1,4 +1,5 @@
 ﻿namespace OldMan.LanguageTraining.Domain
+open FSharpPlus
 
 type Id = Id of int64 
 
@@ -15,10 +16,11 @@ module Id=
        (^R: (member Id: Id) (x))
         
     let inline nextAfter (rows: ^record seq)= 
-        let frozen= rows |> Seq.map fromRaw |> Array.ofSeq
+        let frozen= rows |> map fromRaw |> ofSeq
 
         Id (1L + match frozen with
                  | [||] -> 0L
-                 | _ -> frozen |> Array.map unwrap |> Seq.max)
+                 | _ -> 
+                    frozen |> map unwrap |> Seq.max)
 
 

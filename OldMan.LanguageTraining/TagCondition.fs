@@ -1,6 +1,5 @@
 ﻿namespace OldMan.LanguageTraining.Domain
 
-
 type TagCondition=
     | AndTagCondition of TagCondition*TagCondition
     | OrTagCondition of TagCondition*TagCondition
