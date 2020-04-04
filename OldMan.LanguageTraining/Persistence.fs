@@ -37,21 +37,10 @@ module private Serialization=
 
     let timeFormat= "yyyy-MM-dd-HH-mm-ss"
     type DateTime with
-        member this.Serialize()= 
-            match WebSharper.Pervasives.IsClient with
-            | false -> this.ToString(timeFormat)
-            | true -> 
-                // WebSharper does not know the ToString() overload which is passed a format
-                sprintf "%04i-%02i-%02i-%02i-%02i-%02i" this.Year this.Month this.Day this.Hour this.Minute this.Second
+        member this.Serialize()= this.ToString(timeFormat)
 
         static member Deserialize (from: string)= 
-            match WebSharper.Pervasives.IsClient with
-            | false -> DateTime.ParseExact(from, timeFormat, CultureInfo.InvariantCulture)
-            | true ->
-                // can't use DateTime.ParseExact() because WebSharper does not know CultureInfo
-                match from.Split('-') |> Array.map (fun s -> Int32.Parse s) |> List.ofArray with
-                | [year; month; day; hour; minute; second] -> new DateTime(year, month, day, hour, minute, second)
-                | _ -> failwith "Invalid datetime format"
+            DateTime.ParseExact(from, timeFormat, CultureInfo.InvariantCulture)
     
     type LanguageConfiguration with
         member this.Serialize()= 
