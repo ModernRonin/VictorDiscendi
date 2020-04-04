@@ -5,6 +5,7 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
   <ItemGroup>
+    <None Include="paket.references" />
     <Compile Include="IdTests.fs" />
     <Compile Include="TagConditionTests.fs" />
     <Compile Include="RawQuestionTests.fs" />
