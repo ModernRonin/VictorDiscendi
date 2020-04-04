@@ -5,6 +5,8 @@ framework: auto-detect
 
 nuget FSharp.Data 
 nuget FSharpPlus
+nuget Giraffe
+nuget Microsoft.AspNetCore.App
 
 # testing
 nuget FsCheck.Xunit 

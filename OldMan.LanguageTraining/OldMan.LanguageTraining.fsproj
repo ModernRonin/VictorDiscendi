@@ -2,7 +2,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <WebSharperSourceMap Condition=" '$(Configuration)' == 'Debug' ">True</WebSharperSourceMap>
   </PropertyGroup>
   <ItemGroup>
     <None Include="paket.references" />
