@@ -1,10 +1,14 @@
 source https://api.nuget.org/v3/index.json
 
-nuget FsCheck.Xunit 
+storage: none
+framework: auto-detect
+
 nuget FSharp.Data 
+nuget FSharpPlus
+
+# testing
+nuget FsCheck.Xunit 
 nuget FsUnit 
-nuget Microsoft.AspNetCore.All
-nuget WebSharper.FSharp 
-nuget WebSharper.Mvu 
 nuget xunit 
 nuget xunit.runner.visualstudio 
+
