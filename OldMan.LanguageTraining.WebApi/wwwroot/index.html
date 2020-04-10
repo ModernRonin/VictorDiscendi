@@ -2,9 +2,22 @@
 <head>
     <script src="https://apis.google.com/js/platform.js" async defer></script>
     <meta name="google-signin-client_id" content="665405153593-0aqh263tcs11et51ki8n9tff1ni1u0i9.apps.googleusercontent.com">
+    <script>
+        function onSignIn(googleUser) {
+              var id_token = googleUser.getAuthResponse().id_token;
+              console.log(id_token);
+              document.getElementById("login").style.visibility= "hidden";
+              document.getElementById("loggedIn").style.visibility= "visible";
+              document.getElementById("token").value= id_token;
+            }
+    </script>
 </head>
 <body>
-    <div class="g-signin2" data-onsuccess="onSignIn"></div>
+    <div id="login" class="g-signin2" data-onsuccess="onSignIn"></div>
+    <div id="loggedIn" style="visibility:hidden">
+        <p>You are logged in</p>
+        <label>Token: <input type="text" readonly id="token"/></label>
+    </div>
 </body>
 </html>
   
