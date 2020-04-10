@@ -7,6 +7,7 @@ nuget FSharp.Data
 nuget FSharpPlus
 nuget Giraffe
 nuget Microsoft.AspNetCore.App
+nuget Microsoft.AspNetCore.Authentication.Google
 
 # testing
 nuget FsCheck.Xunit 
