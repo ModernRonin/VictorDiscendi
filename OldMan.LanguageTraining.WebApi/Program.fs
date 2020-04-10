@@ -13,10 +13,15 @@ let webApp =
         route "/"       >=> htmlFile "/index.html" ]
 
 let configureApp (app : IApplicationBuilder) =
-    app.UseStaticFiles() |> ignore   
-    app.UseGiraffe webApp
+    app.UseStaticFiles() 
+        .UseAuthentication()
+        .UseGiraffe webApp |> ignore
 
 let configureServices (services : IServiceCollection) =
+    services.AddAuthentication()
+            .AddGoogle(fun o -> 
+                        o.ClientId <- "665405153593-0aqh263tcs11et51ki8n9tff1ni1u0i9.apps.googleusercontent.com"
+                        o.ClientSecret <- "") |> ignore
     services.AddGiraffe() |> ignore
 
 [<EntryPoint>]
